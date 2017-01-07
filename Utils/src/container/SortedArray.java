@@ -98,14 +98,14 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	public SortedArray(IComparable<T> comparable, int size , 
+	public SortedArray(IComparable<T> comparable, int size, 
 			ISortingAlgorithm<T> algorithm, T... elements)
 	{
-		this(size, comparable);
+		this.comparable = comparable;
 		this.elements = checkSizeAndCopyArray(elements, size);
+		this.currentSize = elements.length;
 		
 		algorithm.sort(comparable, (T[]) this.elements);
-		currentSize = elements.length;
 	}
 
 	/**
@@ -144,11 +144,12 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	public SortedArray(IComparable<T> comparable, int size , 
+	public SortedArray(IComparable<T> comparable, int size, 
 			ESortingAlgorithm algorithm, T... elements)
 	{
-		this(size, comparable);
+		this.comparable = comparable;
 		this.elements = checkSizeAndCopyArray(elements, size);
+		this.currentSize = elements.length;
 		
 		switch (algorithm)
 		{
@@ -166,8 +167,6 @@ public class SortedArray<T> implements Iterable<T>
 									.sort(comparable, (T[]) this.elements);
 				break;
 		}
-
-		currentSize = elements.length;
 	}
 	
 	/**
@@ -177,15 +176,15 @@ public class SortedArray<T> implements Iterable<T>
 	 * were given to the constructor.
 	 * 
 	 * @param comparable 	The {@link IComparable} to sort the elements.
-	 * @param algo			The algorithm used to sort.
+	 * @param algorithm		The algorithm used to sort.
 	 * @param elements		The elements that will be part of the 
 	 * 						{@link SortedArray}.
 	 */
 	@SafeVarargs
-	public SortedArray(IComparable<T> comparable, ESortingAlgorithm algo
+	public SortedArray(IComparable<T> comparable, ESortingAlgorithm algorithm
 			, T... elements)
 	{
-		this(comparable, elements.length, algo, elements);
+		this(comparable, elements.length, algorithm, elements);
 	}
 	
 	/**
@@ -225,9 +224,7 @@ public class SortedArray<T> implements Iterable<T>
 	public void insert(T element)
 	{
 		if(currentSize == getMaxSize())
-		{
 			throw new ArrayIndexOutOfBoundsException(MSG_FULL);
-		}
 		
 		int i; //Will be initialized in the for-loop
 		
@@ -277,7 +274,7 @@ public class SortedArray<T> implements Iterable<T>
 	 * 											or bigger than the amount of 
 	 * 											stored objects - 1. 
 	 */
-	public void delete(int index)
+	public void deleteAtIndex(int index)
 	{
 		checkIndexOutOfBounds(index);
 		
@@ -398,9 +395,16 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	public void setSize(int newSize)
 	{
+		if(newSize == getMaxSize())
+			return;
+		
 		Object[] newElements = new Object[newSize];
 		
-		System.arraycopy(elements, 0, newElements, 0, newSize);
+		if(newSize < currentSize)
+			currentSize = newSize;
+		
+		System.arraycopy(elements, 0, newElements, 0,
+				(newSize < currentSize ? newSize : currentSize));
 		
 		elements = newElements;
 	}
@@ -569,7 +573,7 @@ public class SortedArray<T> implements Iterable<T>
 			@Override
 			public void remove()
 			{
-				delete(index);
+				deleteAtIndex(index);
 			}
 		};
 	}
@@ -579,9 +583,10 @@ public class SortedArray<T> implements Iterable<T>
 	 * Two {@link SortedArray}s are equal if:\n
 	 * -The current amount of stored elements is equal\n
 	 * -The maximum size is equal\n
-	 * -The {@link IComparable} is equal\n
 	 * -All the elements are equal and at the same position in the array.\n
-	 * Note: T must have implemented <code>.equals(...)</code> properly.
+	 * Note: T must have implemented <code>.equals(...)</code> properly and 
+	 * this method does not check if the {@link SortedArray}s have the same
+	 * {@link IComparable}.
 	 * 
 	 * @param obj	The object that the array is compared against.
 	 * @return		True, if the objects are equal, false if not.
@@ -590,18 +595,18 @@ public class SortedArray<T> implements Iterable<T>
 	@Override
 	public boolean equals(Object obj)
 	{
+		if(!(obj instanceof SortedArray) || obj == null)
+			return false;
+		
 		SortedArray<T> otherArray = (SortedArray<T>) obj;
 		
 		if(	currentSize 	!= otherArray.currentSize ||
-			elements.length != otherArray.elements.length ||
-			comparable 		!= otherArray.comparable)
-		{
+			elements.length != otherArray.elements.length)
 			return false;
-		}
 		
-		for(Object o: elements)
+		for(int i = 0; i < currentSize; i++)
 		{
-			if(!o.equals(obj))
+			if(!elements[i].equals(otherArray.get(i)))
 				return false;
 		}
 		
