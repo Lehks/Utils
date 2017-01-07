@@ -14,7 +14,13 @@ import utils.Utils;
  * Represents a normal array that is always sorted according to rules defined 
  * by a {@link IComparable} (some of them for the primitive types and Strings 
  * are already predefined, they are called DEFAULT_*_COMPARABLE and 
- * INVERSE_*_COMPARABLE, whereas * is replaced with the type they can sort).
+ * INVERSE_*_COMPARABLE, whereas * is replaced with the type they can sort).\n
+ * \n
+ * Although the Type partially called Array, this name tells only half of the
+ * truth, since it has the ability to grow / shrink in size. This is never done
+ * implicitly, the user must call <code>.shrink()</code> or
+ * <code>.setSize(...)</code>. This means, insert(...) will throw an exception, 
+ * if the array is full and not implicitly grow.
  *
  * @author 	Lukas Reichmann
  * @version 1.0
@@ -371,12 +377,26 @@ public class SortedArray<T> implements Iterable<T>
 	{
 		if(currentSize < getMaxSize())
 		{
-			Object[] newElements = new Object[currentSize];
-			
-			System.arraycopy(elements, 0, newElements, 0, currentSize);
-			
-			elements = newElements;
+			setSize(currentSize);
 		}
+	}
+	
+	/**
+	 * Sets the maximum size of the array to the size that is passed to 
+	 * the method (this size can be bigger or smaller than the original one). 
+	 * If this size is smaller than the amount of objects that are currently in 
+	 * the array, the elements at the end of the array that do not fit into 
+	 * the new one will be deleted.
+	 * 
+	 * @param newSize	The new maximum size of the array.
+	 */
+	public void setSize(int newSize)
+	{
+		Object[] newElements = new Object[newSize];
+		
+		System.arraycopy(elements, 0, newElements, 0, newSize);
+		
+		elements = newElements;
 	}
 	
 	/**
