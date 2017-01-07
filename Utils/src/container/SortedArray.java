@@ -6,6 +6,7 @@ import container.sorting.Bubblesort;
 import container.sorting.IComparable;
 import container.sorting.IComparable.EComparisonResult;
 import container.sorting.ISortingAlgorithm;
+import container.sorting.InsertionSort;
 import container.sorting.Quicksort;
 import exception.SizeMismatchException;
 import utils.Utils;
@@ -155,10 +156,15 @@ public class SortedArray<T> implements Iterable<T>
 				this.elements = new Bubblesort<T>()
 									.sort(comparable, (T[]) this.elements);
 				break;
+			case INSERTIONSORT:
+				this.elements = new InsertionSort<T>()
+									.sort(comparable, (T[]) this.elements);
+				break;
 			case QUICKSORT:
 			default:
 				this.elements = new Quicksort<T>()
 									.sort(comparable, (T[]) this.elements);
+				break;
 		}
 
 		currentSize = elements.length;
@@ -637,12 +643,17 @@ public class SortedArray<T> implements Iterable<T>
 	public enum ESortingAlgorithm
 	{
 		/**
-		 * Representation of the BubbleSort Algorithm.
+		 * Representation of the BubbleSort algorithm.
 		 */
 		BUBBLESORT,
 		
 		/**
-		 * Representation of the QuickSort Algorithm.
+		 * Representation of the InsertionSort algorithm.
+		 */
+		INSERTIONSORT,
+		
+		/**
+		 * Representation of the QuickSort algorithm.
 		 */
 		QUICKSORT;
 	}
