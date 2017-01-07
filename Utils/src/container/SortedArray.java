@@ -362,6 +362,24 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
+	 * Shrinks the maximum size to the amount of stored objects (if that is not
+	 * already the case).\n
+	 * After calling <code>.shrink()</code> <code>.getCurrentSize() == 
+	 * .getMaxSize()</code> is always true.
+	 */
+	public void shrink()
+	{
+		if(currentSize < getMaxSize())
+		{
+			Object[] newElements = new Object[currentSize];
+			
+			System.arraycopy(elements, 0, newElements, 0, currentSize);
+			
+			elements = newElements;
+		}
+	}
+	
+	/**
 	 * Returns the {@link IComparable} of this {@link SortedArray}.
 	 * 
 	 * @return The {@link IComparable}.
