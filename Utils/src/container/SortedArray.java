@@ -83,7 +83,10 @@ public class SortedArray<T> implements Iterable<T>
 	 * Creates a {@link SortedArray} from an unsorted array, sorting it using a
 	 * specified algorithm that implements the {@link ISortingAlgorithm}
 	 * interface.\n
-	 * The final container's size is determined by 'size'.
+	 * The final container's size is determined by 'size'.\n
+	 * \n
+	 * There are already some default implementations of some common sorting
+	 * algorithms (e.g. QuickSort) in the container.sorting package.
 	 * 
 	 * @param comparable 		The {@link IComparable} to sort the elements.
 	 * @param algorithm			The algorithm used to sort.
@@ -95,6 +98,11 @@ public class SortedArray<T> implements Iterable<T>
 	 * @throws 
 	 * 	SizeMismatchException 	If 'size' is smaller than the amount of 
 	 * 							passed elements.
+	 * 
+	 * @see InsertionSort
+	 * @see Quicksort
+	 * @see Bubblesort
+	 * 
 	 */
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
@@ -113,76 +121,24 @@ public class SortedArray<T> implements Iterable<T>
 	 * specified algorithm that implements the {@link ISortingAlgorithm}
 	 * interface.\n
 	 * The final container's size will be equal to the amount of elements that
-	 * were given to the constructor.
+	 * were given to the constructor.\n
+	 * \n
+	 * There are already some default implementations of some common sorting
+	 * algorithms (e.g. QuickSort) in the container.sorting package.
 	 * 
 	 * @param comparable 	The {@link IComparable} to sort the elements.
 	 * @param algorithm		The algorithm used to sort.
 	 * @param elements		The elements that will be part of the 
 	 * 						{@link SortedArray}.
+	 * 
+	 * @see InsertionSort
+	 * @see Quicksort
+	 * @see Bubblesort
+	 * 
 	 */
 	@SafeVarargs
 	public SortedArray(IComparable<T> comparable, 
 			ISortingAlgorithm<T> algorithm, T... elements)
-	{
-		this(comparable, elements.length, algorithm, elements);
-	}
-	
-	/**
-	 * Creates a {@link SortedArray} from an unsorted array, sorting it using a
-	 * specified algorithm from the {@link ESortingAlgorithm} enumeration.\n
-	 * The final container's size is determined by 'size'.
-	 * 
-	 * @param comparable 		The {@link IComparable} to sort the elements.
-	 * @param algorithm			The algorithm used to sort.
-	 * @param size				The size of the final container. Must be equal 
-	 * 							or higher than the size of 'elements'.
-	 * @param elements			The elements that will be part of the 
-	 * 							{@link SortedArray}.
-	 * 
-	 * @throws SizeMismatchException 	If 'size' is smaller than the amount of 
-	 * 									passed elements.
-	 */
-	@SuppressWarnings("unchecked")
-	@SafeVarargs
-	public SortedArray(IComparable<T> comparable, int size, 
-			ESortingAlgorithm algorithm, T... elements)
-	{
-		this.comparable = comparable;
-		this.elements = checkSizeAndCopyArray(elements, size);
-		this.currentSize = elements.length;
-		
-		switch (algorithm)
-		{
-			case BUBBLESORT:
-				this.elements = new Bubblesort<T>()
-									.sort(comparable, (T[]) this.elements);
-				break;
-			case INSERTIONSORT:
-				this.elements = new InsertionSort<T>()
-									.sort(comparable, (T[]) this.elements);
-				break;
-			case QUICKSORT:
-			default:
-				this.elements = new Quicksort<T>()
-									.sort(comparable, (T[]) this.elements);
-				break;
-		}
-	}
-	
-	/**
-	 * Creates a {@link SortedArray} from an unsorted array, sorting it using a
-	 * specified algorithm from the {@link ESortingAlgorithm} enumeration.\n
-	 * The final container's size will be equal to the amount of elements that
-	 * were given to the constructor.
-	 * 
-	 * @param comparable 	The {@link IComparable} to sort the elements.
-	 * @param algorithm		The algorithm used to sort.
-	 * @param elements		The elements that will be part of the 
-	 * 						{@link SortedArray}.
-	 */
-	@SafeVarargs
-	public SortedArray(IComparable<T> comparable, ESortingAlgorithm algorithm
-			, T... elements)
 	{
 		this(comparable, elements.length, algorithm, elements);
 	}
@@ -630,33 +586,5 @@ public class SortedArray<T> implements Iterable<T>
 		}
 		
 		return sb.toString();
-	}
-	
-	/**
-	 * An enumeration to represent different sorting algorithms for quick 
-	 * access when using the <code>SortedArray(IComparable&lt;T&gt; comparable,
-	 * int size , SortingAlgorithm algorithm, T... elements)</code>
-	 * constructor.
-	 * 
-	 * @author 	Lukas Reichmann
-	 * @version	1.0
-	 * @see		SortedArray
-	 */
-	public enum ESortingAlgorithm
-	{
-		/**
-		 * Representation of the BubbleSort algorithm.
-		 */
-		BUBBLESORT,
-		
-		/**
-		 * Representation of the InsertionSort algorithm.
-		 */
-		INSERTIONSORT,
-		
-		/**
-		 * Representation of the QuickSort algorithm.
-		 */
-		QUICKSORT;
 	}
 }
