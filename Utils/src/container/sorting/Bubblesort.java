@@ -26,22 +26,15 @@ public final class Bubblesort<T> implements ISortingAlgorithm<T>
 	@Override
 	public T[] sort(IComparable<T> comparable, T... elements)
 	{
-		return new ISortingAlgorithm<T>()
+		for (int i = 1; i < elements.length; i++)
 		{
-			@Override
-			public T[] sort(IComparable<T> comparable, T... elements)
+			for (int j = i; j > 0 && comparable.compare(elements[j - 1], 
+					elements[j]) == EComparisonResult.BEFORE; j--)
 			{
-				for (int i = 1; i < elements.length; i++)
-				{
-					for (int j = i; j > 0 && comparable.compare(elements[j - 1], 
-							elements[j]) == EComparisonResult.BEFORE; j--)
-					{
-						Utils.swapArrayPos(elements, j - 1, j);
-					}
-				}
-
-				return elements;
+				Utils.swapArrayPos(elements, j - 1, j);
 			}
-		}.sort(comparable, elements);
+		}
+
+		return elements;
 	}
 }

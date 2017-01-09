@@ -430,7 +430,6 @@ public class SortedArray<T> implements Iterable<T>
 		return elements.length;
 	}
 
-	
 	/**
 	 * Returns the amount of objects that are currently being stored in the
 	 * container.
@@ -456,7 +455,6 @@ public class SortedArray<T> implements Iterable<T>
 				Utils.isAfter(cast(elements[currentSize - 1]), element, comparable);
 	}
 
-	
 	/**
 	 * Checks if the index is smaller than 0 or bigger or equals the amount 
 	 * of the objects in the container.
@@ -524,7 +522,6 @@ public class SortedArray<T> implements Iterable<T>
 		return ret;
 	}
 
-	
 	/**
 	 * Returns the iterator that is used within a for-each loop.
 	 * 
