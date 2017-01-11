@@ -17,7 +17,7 @@ import container.SortedArray;
 public interface ISortingAlgorithm<T>
 {
 	/**
-	 * The method that will be called to sort an array.\n
+	 * The method that will be called to sort an array.<br>
 	 * Note: The method is supposed to modify the original array and also
 	 * returning a reference to it (the method is not supposed to copy the
 	 * entire array).

@@ -15,8 +15,8 @@ import utils.Utils;
  * Represents a normal array that is always sorted according to rules defined 
  * by a {@link IComparable} (some of them for the primitive types and Strings 
  * are already predefined, they are called DEFAULT_*_COMPARABLE and 
- * INVERSE_*_COMPARABLE, whereas * is replaced with the type they can sort).\n
- * \n
+ * INVERSE_*_COMPARABLE, whereas * is replaced with the type they can sort).<br>
+ * <br>
  * Although the Type partially called Array, this name tells only half of the
  * truth, since it has the ability to grow / shrink in size. This is never done
  * implicitly, the user must call <code>.shrink()</code> or
@@ -56,7 +56,7 @@ public class SortedArray<T> implements Iterable<T>
 	protected IComparable<T> comparable;
 
 	/**
-	 * The array that stores all the values.\n
+	 * The array that stores all the values.<br>
 	 * This array always remains sorted.
 	 */
 	protected Object[] elements;
@@ -82,9 +82,9 @@ public class SortedArray<T> implements Iterable<T>
 	/**
 	 * Creates a {@link SortedArray} from an unsorted array, sorting it using a
 	 * specified algorithm that implements the {@link ISortingAlgorithm}
-	 * interface.\n
-	 * The final container's size is determined by 'size'.\n
-	 * \n
+	 * interface.<br>
+	 * The final container's size is determined by 'size'.<br>
+	 * <br>
 	 * There are already some default implementations of some common sorting
 	 * algorithms (e.g. QuickSort) in the container.sorting package.
 	 * 
@@ -119,10 +119,10 @@ public class SortedArray<T> implements Iterable<T>
 	/**
 	 * Creates a {@link SortedArray} from an unsorted array, sorting it using a
 	 * specified algorithm that implements the {@link ISortingAlgorithm}
-	 * interface.\n
+	 * interface.<br>
 	 * The final container's size will be equal to the amount of elements that
-	 * were given to the constructor.\n
-	 * \n
+	 * were given to the constructor.<br>
+	 * <br>
 	 * There are already some default implementations of some common sorting
 	 * algorithms (e.g. QuickSort) in the container.sorting package.
 	 * 
@@ -207,7 +207,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Removes an element from the {@link SortedArray} by value.\n
+	 * Removes an element from the {@link SortedArray} by value.<br>
 	 * If the element is not contained in the container, the methods will 
 	 * return silently.
 	 * 
@@ -222,7 +222,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 
 	/**
-	 * Removes an element from the {@link SortedArray} by array.\n
+	 * Removes an element from the {@link SortedArray} by array.<br>
 	 * 
 	 * @param index The index of the element that will be removed.
 	 * 
@@ -238,7 +238,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Deletes all elements from the array.\n
+	 * Deletes all elements from the array.<br>
 	 * Afterwards, <code>getCurrentSize()</code> will return 0, but
 	 * <code>getMaxSize()</code> will remain unchanged.
 	 */
@@ -328,7 +328,7 @@ public class SortedArray<T> implements Iterable<T>
 	
 	/**
 	 * Shrinks the maximum size to the amount of stored objects (if that is not
-	 * already the case).\n
+	 * already the case).<br>
 	 * After calling <code>.shrink()</code> <code>.getCurrentSize() == 
 	 * .getMaxSize()</code> is always true.
 	 */
@@ -430,7 +430,7 @@ public class SortedArray<T> implements Iterable<T>
 	
 	/**
 	 * Casts an object to a reference to T (to get rid of warning / the need to
-	 * add the {@link SuppressWarnings} annotation to many methods.).\n
+	 * add the {@link SuppressWarnings} annotation to many methods.).<br>
 	 * Does not do any sort of checking if the cast is possible.
 	 * 
 	 * @param 	element The reference to cast.
@@ -444,7 +444,7 @@ public class SortedArray<T> implements Iterable<T>
 	
 	/**
 	 * Moves all elements in the array to the left, starting at a given 
-	 * index.\n
+	 * index.<br>
 	 * The element at this index will be overridden.
 	 * 
 	 * @param end The index.
@@ -460,7 +460,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Converts the contents of a {@link SortedArray} into a standard array.\n
+	 * Converts the contents of a {@link SortedArray} into a standard array.<br>
 	 * Note: All the elements from the {@link SortedArray} are being copied into 
 	 * a new array, which is then returned.
 	 * 
@@ -532,11 +532,11 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Returns weather this and the {@link SortedArray} 'obj' are equal.\n
-	 * Two {@link SortedArray}s are equal if:\n
-	 * -The current amount of stored elements is equal\n
-	 * -The maximum size is equal\n
-	 * -All the elements are equal and at the same position in the array.\n
+	 * Returns weather this and the {@link SortedArray} 'obj' are equal.<br>
+	 * Two {@link SortedArray}s are equal if:<br>
+	 * -The current amount of stored elements is equal<br>
+	 * -The maximum size is equal<br>
+	 * -All the elements are equal and at the same position in the array.<br>
 	 * Note: T must have implemented <code>.equals(...)</code> properly and 
 	 * this method does not check if the {@link SortedArray}s have the same
 	 * {@link IComparable}.
@@ -567,10 +567,10 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Returns the contents of this array as a Strings.\n
+	 * Returns the contents of this array as a Strings.<br>
 	 * This methods returns all elements in one line, separated by a ';'. To
 	 * get one element per line, call 
-	 * <code>.toString().replace("; ", "\n")</code>.
+	 * <code>.toString().replace("; ", "<br>")</code>.
 	 */
 	@Override
 	public String toString()

@@ -287,7 +287,7 @@ public class Utils
 	
 	/**
 	 * A wrapper for <code>{@link IComparable}.compare(...)
-	 * == {@link EComparisonResult}.BEFORE</code> for quicker access.\n
+	 * == {@link EComparisonResult}.BEFORE</code> for quicker access.<br>
 	 * Returns weather 'other' is before 'source' according to 
 	 * 'comparable'.
 	 * 
@@ -311,7 +311,7 @@ public class Utils
 	
 	/**
 	 * A wrapper for <code>{@link IComparable}.compare(...)
-	 * == {@link EComparisonResult}.AFTER</code> for quicker access.\n
+	 * == {@link EComparisonResult}.AFTER</code> for quicker access.<br>
 	 * Returns weather 'other' is after 'source' according to 
 	 * 'comparable'.
 	 * 
@@ -335,7 +335,7 @@ public class Utils
 	
 	/**
 	 * A wrapper for <code>{@link IComparable}.compare(...)
-	 * == {@link EComparisonResult}.EQUALS</code> for quicker access.\n
+	 * == {@link EComparisonResult}.EQUALS</code> for quicker access.<br>
 	 * Returns weather 'other' is equal to 'source' according to 
 	 * 'comparable'.
 	 * 	

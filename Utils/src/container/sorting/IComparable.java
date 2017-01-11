@@ -326,17 +326,17 @@ public interface IComparable<T>
 	};
 	
 	/**
-	 * This is the method that is being called to compared to instances.
-	 * \n\n
+	 * This is the method that is being called to compared to instances.<br>
+	 * <br>
 	 * To make it work properly the method must stick to some 
 	 * conventions (A and B are two instances of T, A being the parameter 
-	 * 'source' and B being 'other'):\n
+	 * 'source' and B being 'other'):<br>
 	 * -If if does not matter, if the order is AB or BA, the method should 
-	 * return {@link EComparisonResult}.EQUALS.\n
+	 * return {@link EComparisonResult}.EQUALS.<br>
 	 * -If the order must be AB, the method should 
-	 * return {@link EComparisonResult}.AFTER (Because A is after B).\n 
+	 * return {@link EComparisonResult}.AFTER (Because A is after B).<br> 
 	 * -If the order must be BA, the method should 
-	 * return {@link EComparisonResult}.BEFORE (Because B is before A).\n 
+	 * return {@link EComparisonResult}.BEFORE (Because B is before A).<br> 
 	 * (The terms before and after always refer to the place of 'other' 
 	 * compared to 'source')
 	 * 

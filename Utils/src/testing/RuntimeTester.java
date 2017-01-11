@@ -4,7 +4,19 @@ package testing;
  * A class that is made to test the runtime of a procedure. After passing a 
  * {@link Runnable} to an instance, the class will test the runtime of the
  * procedure. Also, the procedure can be executed multiple times to calculate 
- * an average.
+ * an average.<br>
+ * <br>
+ * To quickly use a {@link RuntimeTester}, use:<br>
+ * <pre><code>
+ * System.out.println(new {@link RuntimeTester}(new {@link Runnable}()
+ * {
+ *	{@literal @}Override
+ *	public void run()
+ *	{
+ *		//Code to test
+ *	}
+ * }).start().toString());
+ * </code></pre>
  * 
  * @author 	Lukas Reichmann
  * @version	1.0
@@ -63,7 +75,7 @@ public class RuntimeTester
 	
 	/**
 	 * Starts the test. This method can be called multiple times to repeat
-	 * the test.\n
+	 * the test.<br>
 	 * Note: <code>.getResult()</code> will always only return the result of
 	 * the last test.
 	 * 
@@ -120,7 +132,7 @@ public class RuntimeTester
 	/**
 	 * Sets the amount of repetitions.
 	 * 
-	 * @param The new amount of repetitions.
+	 * @param repetitions The new amount of repetitions.
 	 */
 	public void setRepetitions(int repetitions)
 	{
@@ -139,7 +151,7 @@ public class RuntimeTester
 
 	/**
 	 * A class to represent the result of a test executed by
-	 * <code>.star()</code> in {@link RuntimeTester}.\n
+	 * <code>.star()</code> in {@link RuntimeTester}.<br>
 	 * This class contains informations about the total and average time (in
 	 * milli- and nanoseconds) and how often the test was executed. The latter
 	 * is the same as <code>.setRepetitions</code> from {@link RuntimeTester}
