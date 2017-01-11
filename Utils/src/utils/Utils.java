@@ -33,6 +33,10 @@ public class Utils
 	 */
 	private static Scanner scanner = null;
 	
+	/**
+	 * Since everything in the {@link Utils} is static, there is no need to 
+	 * construct an instance.
+	 */
 	private Utils()
 	{}
 	
@@ -201,6 +205,7 @@ public class Utils
 	
 	/**
 	 * Asks the user a yes or no question.
+	 * 
 	 * @param 	msg A hint to tell the user what the question is about.
 	 * @return 	The answer of the user.
 	 */
@@ -226,6 +231,7 @@ public class Utils
 	/**
 	 * Asks the user if the stack trace of an exception should be printed or 
 	 * not.
+	 * 
 	 * @param e The exception to be printed.
 	 */
 	public static void printException(Exception e)
