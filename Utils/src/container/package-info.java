@@ -1,6 +1,6 @@
 
 /**
- * A package that contains functionality to sort arrays.
+ * A package that holds various containers.
  * 
  * @author Lukas Reichmann
  *
