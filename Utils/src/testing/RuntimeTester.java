@@ -2,13 +2,19 @@ package testing;
 
 /**
  * A class that is made to test the runtime of a procedure. After passing a 
- * {@link Runnable} to an instance, the class will test the runtime of the
- * procedure. Also, the procedure can be executed multiple times to calculate 
- * an average.<br>
+ * {@link RuntimeTesterRunnable} to an instance, the class will test the 
+ * runtime of the procedure (later called test-Runnable). Also, the procedure 
+ * can be executed multiple times to calculate an average.<br>
+ * Additionally, it is possible to set another {@link RuntimeTesterRunnable}, 
+ * that will be called <b>each</b> time before calling the test-Runnable 
+ * (&#8594; if the repetitions are set to 10, it will be called 10 times)
+ * (later called init-Runnable). This {@link RuntimeTesterRunnable} does never 
+ * change the result of the test. The init phase can be disabled by setting the 
+ * runnable to null.<br> 
  * <br>
  * To quickly use a {@link RuntimeTester}, use:<br>
  * <pre><code>
- * System.out.println(new {@link RuntimeTester}(new {@link Runnable}()
+ * System.out.println(new {@link RuntimeTester}(new RuntimeTesterRunnable()
  * {
  *	{@literal @}Override
  *	public void run()
@@ -26,49 +32,80 @@ package testing;
 public class RuntimeTester
 {
 	/**
-	 * The {@link Runnable} to execute.
+	 * The {@link RuntimeTesterRunnable} containing the code to test.
 	 */
-	private Runnable runnable 	= null;
+	private RuntimeTesterRunnable runnableTest 	= null;
 	
 	/**
-	 * Stores how often the {@link Runnable} will be executed.
+	 * The {@link RuntimeTesterRunnable} that will be executed every time
+	 * before the runtime testing begins.
 	 */
-	private int repetitions 	= 0;
+	private RuntimeTesterRunnable runnableInit	= null;
+	
+	/**
+	 * Stores how often the {@link RuntimeTesterRunnable} will be executed.
+	 */
+	private int repetitions 					= 0;
 	
 	/**
 	 * The result of the test.
 	 * 
 	 * @see TestResult
 	 */
-	private TestResult result	= null;
+	private TestResult result					= null;
 	
 	/**
-	 * Constructs a new instance and initializes the {@link Runnable} to
-	 * execute and the amount of repetitions with the passed parameters.
-	 * 
-	 * @param runnable		The {@link Runnable} to execute.
-	 * @param repetitions	The amount of repetitions.
+	 * An array of elements set by the user. This might be used during testing
+	 * (Usually initialized during the init-Runnable).
 	 */
-	public RuntimeTester(Runnable runnable, int repetitions)
+	private Object[] customElements				= null;
+	
+	/**
+	 * Constructs a new instance and initializes all three attributes with the
+	 * passed parameters.
+	 * 
+	 * @param runnableInit	A runnable that will be called before the runtime tests
+	 * 						will start.
+	 * @param runnableTest	The runnable that will be tested on its runtime.
+	 * @param repetitions	How often 'runnableTest' will be called. If this is > 1,
+	 * 						an average can be calculated.
+	 */
+	public RuntimeTester(RuntimeTesterRunnable runnableInit, 
+			RuntimeTesterRunnable runnableTest, int repetitions)
 	{
 		if(repetitions <= 0)
 			throw new IllegalArgumentException
 										("Must repeat at least one time.");
 		
-		if(runnable == null)
-			throw new IllegalArgumentException("Runnable is null.");
+		if(runnableTest == null)
+			throw new IllegalArgumentException("Runnable to test is null.");
 		
-		this.runnable = runnable;
-		this.repetitions =repetitions;
+		setRunnableInit(runnableInit);
+		setRunnable(runnableTest);
+		setRepetitions(repetitions);
+	}
+	
+	/**
+	 * Constructs a new instance and initializes the {@link RuntimeTesterRunnable} to
+	 * test and the amount of repetitions with the passed parameters. The
+	 * test-Runnable be set to null and therefore not executed when <code>.start()
+	 * </code> is called.
+	 * 
+	 * @param runnable		The {@link RuntimeTesterRunnable} to execute.
+	 * @param repetitions	The amount of repetitions.
+	 */
+	public RuntimeTester(RuntimeTesterRunnable runnableTest, int repetitions)
+	{
+		this(null, runnableTest, repetitions);
 	}
 
 	/**
-	 * Constructs a new instance and initializes the {@link Runnable} to
-	 * execute with the passed parameter and the amount of repetitions with 0.
+	 * Constructs a new instance and initializes the {@link RuntimeTesterRunnable} to
+	 * execute with the passed parameter and the amount of repetitions with 1.
 	 * 
-	 * @param runnable		The {@link Runnable} to execute.
+	 * @param runnable		The {@link RuntimeTesterRunnable} to execute.
 	 */
-	public RuntimeTester(Runnable runnable)
+	public RuntimeTester(RuntimeTesterRunnable runnable)
 	{
 		this(runnable, 1);
 	}
@@ -85,38 +122,69 @@ public class RuntimeTester
 	 */
 	public TestResult start()
 	{
-		long milliStart = System.currentTimeMillis();
-		long nanoStart = System.nanoTime();
+		long milliTotal = 0;
+		long nanoTotal = 0;
 		
 		for(int i = 0; i < repetitions; i++)
-			runnable.run();
+		{
+			if(runnableInit != null)
+			{
+				runnableInit.run(this);
+			}
+			
+			long milliStart = System.currentTimeMillis();
+			long nanoStart = System.nanoTime();
+			
+			runnableTest.run(this);
+			
+			milliTotal += System.currentTimeMillis() - milliStart;
+			nanoTotal += System.nanoTime() - nanoStart;
+		}
 		
-		long nanoEnd = System.nanoTime();
-		long milliEnd = System.currentTimeMillis();
-		
-		result = new TestResult(milliEnd - milliStart, nanoEnd - nanoStart, 
+		result = new TestResult(milliTotal, nanoTotal, 
 								repetitions);
 		return result;
 	}
 	
 	/**
-	 * Returns the {@link Runnable} that will be executed.
+	 * Returns the init-Runnable.
 	 * 
-	 * @return The runnable.
+	 * @return The init-Runnable.
 	 */
-	public Runnable getRunnable()
+	public RuntimeTesterRunnable getRunnableInit()
 	{
-		return runnable;
+		return runnableInit;
 	}
 
 	/**
-	 * Sets a new {@link Runnable}.
+	 * Sets a new init-Runnable. Set this to null to prevent the 
+	 * {@link RuntimeTesterRunnable} form being called.
 	 * 
-	 * @param runnable The new runnable.
+	 * @param runnableInit	The new init-Runnable.
 	 */
-	public void setRunnable(Runnable runnable)
+	public void setRunnableInit(RuntimeTesterRunnable runnableInit)
 	{
-		this.runnable = runnable;
+		this.runnableInit = runnableInit;
+	}
+
+	/**
+	 * Returns the test-Runnable.
+	 * 
+	 * @return The test-Runnable.
+	 */
+	public RuntimeTesterRunnable getRunnable()
+	{
+		return runnableTest;
+	}
+
+	/**
+	 * Sets a new test-Runnable.
+	 * 
+	 * @param runnable The new test-Runnable.
+	 */
+	public void setRunnable(RuntimeTesterRunnable runnable)
+	{
+		this.runnableTest = runnable;
 	}
 
 	/**
@@ -147,6 +215,16 @@ public class RuntimeTester
 	public TestResult getResult()
 	{
 		return result;
+	}
+
+	public Object[] getCustomElements()
+	{
+		return customElements;
+	}
+
+	public void setCustomElements(Object[] customElements)
+	{
+		this.customElements = customElements;
 	}
 
 	/**
@@ -234,7 +312,6 @@ public class RuntimeTester
 			return nanoTime / repetitions;
 		}
 
-
 		/**
 		 * Returns how often the test was executed.
 		 *  
@@ -253,14 +330,38 @@ public class RuntimeTester
 		{
 			StringBuilder sb = new StringBuilder();
 
-			sb.append(String.format("      | %9s | %12s\n", "Millisecs", "Nanosecs"));
-			sb.append(String.format("%032d\n", 0).replace('0', '-'));
-			sb.append(String.format("%5s | %9d | %12d\n", "Abs.:", milliTime, nanoTime));
-			sb.append(String.format("%5s | %9d | %12d\n", "Avg.:", getAverageMilliTime(), getAverageNanoTime()));
+			sb.append(String.format
+					("      | %9s | %12s\n", "Millisecs", "Nanosecs"));
+			sb.append(String.format
+					("%032d\n", 0).replace('0', '-'));
+			sb.append(String.format
+					("%5s | %9d | %12d\n", "Abs.:", milliTime, nanoTime));
+			sb.append(String.format
+					("%5s | %9d | %12d\n", "Avg.:", getAverageMilliTime(),
+							getAverageNanoTime()));
 			sb.append("\n");
 			sb.append("Repetitions: ").append(repetitions);
 			
 			return sb.toString();
 		}
+	}
+	
+	/**
+	 * A interface that behaves similar to link java.lang.Runnable, but the
+	 * <code>.run(...)</code> method of this one has a Parameter that holds
+	 * a reference to the {@link RuntimeTester} that called the method.
+	 * 
+	 * @author Lukas Reichmann
+	 *
+	 */
+	public interface RuntimeTesterRunnable
+	{
+		/**
+		 * The method that the interface is about.
+		 * 
+		 * @param rt	The {@link RuntimeTester} that the method was called 
+		 * 				by.
+		 */
+		public void run(RuntimeTester rt);
 	}
 }
