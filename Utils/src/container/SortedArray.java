@@ -40,7 +40,7 @@ public class SortedArray<T> implements Iterable<T>
 	protected static final String MSG_FULL = "Array is full.";
 	
 	/**
-	 * The message that is being given to a ArrayIndexOutOfBoundsException if
+	 * The message that is being given to a {@link SizeMismatchException} if
 	 * the size and amount of elements does not fit when using the constructors 
 	 * <code>SortedArray(IComparable&lt;T&gt; comparable, int size ,
 	 * SortingAlgorithm algorithm, T... elements)</code> and <code>
@@ -49,6 +49,14 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	protected static final String MSG_SIZE_MISMATCH = "Passed size is: %d, "
 											+ "but amount of elements is: %d";
+	
+	/**
+	 * The message that is being given to a {@link SizeMismatchException} 
+	 * thrown by SortedArray(int, IComparable) when the maximum size is
+	 * &lt; 0.
+	 */
+	protected static final String MSG_SIZE_SMALLER_ZERO 
+													= "Size must not be < 0.";
 	
 	/**
 	 * The comparable that is being used to compare two values when sorting.
@@ -69,12 +77,18 @@ public class SortedArray<T> implements Iterable<T>
 	/**
 	 * Constructs a new {@link SortedArray}.
 	 * 
+	 * @param maxSize		The maximum size of the array.
 	 * @param comparable 	The {@link IComparable} to compare two values when 
 	 * 						sorting.
-	 * @param maxSize		The maximum size of the array.
+	 * 
+	 * @throws SizeMismatchException 	If the given maximum size of the array 
+	 * 									is &lt; 0.
 	 */
 	public SortedArray(int maxSize, IComparable<T> comparable)
 	{
+		if(maxSize < 0)
+			throw new SizeMismatchException(MSG_SIZE_SMALLER_ZERO);
+		
 		this.comparable = comparable;
 		this.elements = new Object[maxSize];
 	}
@@ -425,7 +439,6 @@ public class SortedArray<T> implements Iterable<T>
 	{
 		if(index < 0 || index >= currentSize)
 			throw new ArrayIndexOutOfBoundsException(index);
-		
 	}
 	
 	/**
