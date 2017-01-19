@@ -659,12 +659,12 @@ public class SortedArray<T> implements Iterable<T>
 	{
 		StringBuilder sb = new StringBuilder("Maximum size: ");
 		sb.append(elements.length).append(", Current size: ")
-		.append(currentSize).append("; ");
+		.append(currentSize);
 		
 		for(int i = 0; i < currentSize; i++)
 		{
-			sb.append("Index: ").append(i)
-			.append(" Value: ").append(elements[i] + "; ");
+			sb.append("; ").append("Index: ").append(i)
+			.append(" Value: ").append(elements[i]);
 		}
 		
 		return sb.toString();
