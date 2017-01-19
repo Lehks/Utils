@@ -5,6 +5,7 @@ import java.util.Iterator;
 import container.sorting.Bubblesort;
 import container.sorting.IComparable;
 import container.sorting.IComparable.EComparisonResult;
+import container.sorting.ISearchCondition;
 import container.sorting.ISortingAlgorithm;
 import container.sorting.InsertionSort;
 import container.sorting.Quicksort;
@@ -27,6 +28,7 @@ import utils.Utils;
  * @version 1.0
  * @see 	IComparable
  * @see 	EComparisonResult
+ * @see		ISearchCondition
  *
  * @param <T> The type of the elements in the container.
  * 
@@ -158,6 +160,43 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
+	 * Creates a {@link SortedArray} from an unsorted array, sorting it using 
+	 * the {@link Quicksort} algorithm.<br>
+	 * The final container's size is determined by 'size'.
+	 * 
+	 * @param comparable 		The {@link IComparable} to sort the elements.
+	 * @param size				The size of the final container. Must be equal 
+	 * 							or higher than the size of 'elements'.
+	 * @param elements			The elements that will be part of the 
+	 * 							{@link SortedArray}.
+	 * 
+	 * @throws 
+	 * 	SizeMismatchException 	If 'size' is smaller than the amount of 
+	 * 							passed elements.
+	 */
+	@SafeVarargs
+	public SortedArray(IComparable<T> comparable, int size, T... elements)
+	{
+		this(comparable, size, new Quicksort<>(), elements);
+	}
+	
+	/**
+	 * Creates a {@link SortedArray} from an unsorted array, sorting it using 
+	 * the {@link Quicksort} algorithm.<br>
+	 * The final container's size will be equal to the amount of elements that
+	 * were given to the constructor.
+	 * 
+	 * @param comparable 	The {@link IComparable} to sort the elements.
+	 * @param elements		The elements that will be part of the 
+	 * 						{@link SortedArray}.
+	 */
+	@SafeVarargs
+	public SortedArray(IComparable<T> comparable, T... elements)
+	{
+		this(comparable, new Quicksort<>(), elements);
+	}
+	
+	/**
 	 * A helper method that is used by the constructors using instances of the
 	 * {@link ISortingAlgorithm} interface.
 	 * 
@@ -266,7 +305,7 @@ public class SortedArray<T> implements Iterable<T>
 	 * be found.
 	 * 
 	 * @param element 	The element to search for.
-	 * @return			The index of the element.
+	 * @return			The index of the element, or -1 if not found.
 	 */
 	public int find(T element)
 	{
@@ -296,6 +335,35 @@ public class SortedArray<T> implements Iterable<T>
 				leftBorder = middle + 1;
 			
 			middle = (leftBorder + rightBorder) / 2;
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * Finds the first element in the container that has a certain trait (that 
+	 * is specified in the {@link ISearchCondition}) and returns its index
+	 * (or -1 if it could not be found).<br>
+	 * Note: This is generally slower than find(T), since this method searches
+	 * sequentially.
+	 * 
+	 * @param condition	The {@link ISearchCondition} by which to identify the 
+	 * 					correct object.
+	 * @param customObj	The custom object used in {@link ISearchCondition}. 
+	 * 					See the documentation of that class for further 
+	 * 					information.
+	 * @return			The index of the element if it was found, if not -1.
+	 * 
+	 * @param <T1>		Type of the custom object.
+	 * 
+	 * @see ISearchCondition
+	 */
+	public <T1> int find(ISearchCondition<T, T1> condition, T1 customObj)
+	{
+		for(int i = 0; i < getCurrentSize(); i++)
+		{
+			if(condition.isCorrectElement(get(i), customObj))
+				return i;
 		}
 		
 		return -1;
@@ -422,7 +490,8 @@ public class SortedArray<T> implements Iterable<T>
 	protected boolean checkValueOutOfBounds(T element)
 	{
 		return 	Utils.isBefore(cast(elements[0]), element, comparable) || 
-				Utils.isAfter(cast(elements[currentSize - 1]), element, comparable);
+				Utils.isAfter(cast(elements[currentSize - 1]), element,
+																comparable);
 	}
 
 	/**
@@ -583,7 +652,7 @@ public class SortedArray<T> implements Iterable<T>
 	 * Returns the contents of this array as a Strings.<br>
 	 * This methods returns all elements in one line, separated by a ';'. To
 	 * get one element per line, call 
-	 * <code>.toString().replace("; ", "<br>")</code>.
+	 * <code>.toString().replace("; ", "\n")</code>.
 	 */
 	@Override
 	public String toString()
