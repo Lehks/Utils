@@ -64,11 +64,11 @@ public class RuntimeTester
 	 * Constructs a new instance and initializes all three attributes with the
 	 * passed parameters.
 	 * 
-	 * @param runnableInit	A runnable that will be called before the runtime tests
-	 * 						will start.
+	 * @param runnableInit	A runnable that will be called before the runtime 
+	 * 						tests will start.
 	 * @param runnableTest	The runnable that will be tested on its runtime.
-	 * @param repetitions	How often 'runnableTest' will be called. If this is > 1,
-	 * 						an average can be calculated.
+	 * @param repetitions	How often 'runnableTest' will be called. If this is 
+	 * 						&gt; 1, an average can be calculated.
 	 */
 	public RuntimeTester(RuntimeTesterRunnable runnableInit, 
 			RuntimeTesterRunnable runnableTest, int repetitions)
@@ -86,12 +86,12 @@ public class RuntimeTester
 	}
 	
 	/**
-	 * Constructs a new instance and initializes the {@link RuntimeTesterRunnable} to
-	 * test and the amount of repetitions with the passed parameters. The
-	 * test-Runnable be set to null and therefore not executed when <code>.start()
-	 * </code> is called.
+	 * Constructs a new instance and initializes the 
+	 * {@link RuntimeTesterRunnable} to test and the amount of repetitions with 
+	 * the passed parameters. The test-Runnable be set to null and therefore 
+	 * not executed when <code>.start() </code> is called.
 	 * 
-	 * @param runnable		The {@link RuntimeTesterRunnable} to execute.
+	 * @param runnableTest	The {@link RuntimeTesterRunnable} to execute.
 	 * @param repetitions	The amount of repetitions.
 	 */
 	public RuntimeTester(RuntimeTesterRunnable runnableTest, int repetitions)
@@ -100,8 +100,9 @@ public class RuntimeTester
 	}
 
 	/**
-	 * Constructs a new instance and initializes the {@link RuntimeTesterRunnable} to
-	 * execute with the passed parameter and the amount of repetitions with 1.
+	 * Constructs a new instance and initializes the 
+	 * {@link RuntimeTesterRunnable} to execute with the passed parameter and 
+	 * the amount of repetitions with 1.
 	 * 
 	 * @param runnable		The {@link RuntimeTesterRunnable} to execute.
 	 */
@@ -217,11 +218,21 @@ public class RuntimeTester
 		return result;
 	}
 
+	/**
+	 * Returns the custom elements.
+	 * 
+	 * @return 	The custom elements.
+	 */
 	public Object[] getCustomElements()
 	{
 		return customElements;
 	}
 
+	/**
+	 * Sets the custom elements.
+	 * 
+	 * @param customElements	The new custom elements.
+	 */
 	public void setCustomElements(Object[] customElements)
 	{
 		this.customElements = customElements;
