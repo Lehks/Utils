@@ -335,7 +335,7 @@ public class Utils
 	
 	/**
 	 * A wrapper for <code>{@link IComparable}.compare(...)
-	 * == {@link EComparisonResult}.EQUALS</code> for quicker access.<br>
+	 * == {@link EComparisonResult}.EQUAL</code> for quicker access.<br>
 	 * Returns weather 'other' is equal to 'source' according to 
 	 * 'comparable'.
 	 * 	
@@ -354,7 +354,7 @@ public class Utils
 										IComparable<T> comparable)
 	{
 		return comparable.compare(source, other) 
-				== IComparable.EComparisonResult.EQUALS;
+				== IComparable.EComparisonResult.EQUAL;
 	}
 	
 	/**

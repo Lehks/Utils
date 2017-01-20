@@ -26,9 +26,11 @@ public interface IComparable<T>
 	= (Boolean source, Boolean other) -> 
 	{
 		if((source == null && other == null) || source == other)
-			return IComparable.EComparisonResult.EQUALS;
+			return IComparable.EComparisonResult.EQUAL;
 		else if(source == null || source == true)
 			return IComparable.EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return IComparable.EComparisonResult.AFTER;
 	};
@@ -40,13 +42,15 @@ public interface IComparable<T>
 	= (Byte source, Byte other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
 			return EComparisonResult.AFTER;
 		else if(source == null || other < source)
 			return EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return EComparisonResult.AFTER;
 	};
@@ -58,13 +62,15 @@ public interface IComparable<T>
 	= (Short source, Short other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
 			return EComparisonResult.AFTER;
 		else if(source == null || other < source)
 			return EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return EComparisonResult.AFTER;
 	};
@@ -76,13 +82,15 @@ public interface IComparable<T>
 	= (Integer source, Integer other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
 			return EComparisonResult.AFTER;
 		else if(source == null || other < source)
 			return EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return EComparisonResult.AFTER;
 	};
@@ -94,13 +102,15 @@ public interface IComparable<T>
 	= (Long source, Long other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
 			return EComparisonResult.AFTER;
 		else if(source == null || other < source)
 			return EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return EComparisonResult.AFTER;
 	};
@@ -112,13 +122,15 @@ public interface IComparable<T>
 	= (Float source, Float other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
 			return EComparisonResult.AFTER;
 		else if(source == null || other < source)
 			return EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return EComparisonResult.AFTER;
 	};
@@ -130,13 +142,15 @@ public interface IComparable<T>
 	= (Double source, Double other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
 			return EComparisonResult.AFTER;
 		else if(source == null || other < source)
 			return EComparisonResult.BEFORE;
+		else if(source.equals(other))
+			return EComparisonResult.EQUAL;
 		else
 			return EComparisonResult.AFTER;
 	};
@@ -148,7 +162,7 @@ public interface IComparable<T>
 	= (Character source, Character other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
@@ -170,7 +184,7 @@ public interface IComparable<T>
 		else if(sourceCapital < otherCapital)
 			return IComparable.EComparisonResult.AFTER;
 		else
-			return IComparable.EComparisonResult.EQUALS;
+			return IComparable.EComparisonResult.EQUAL;
 	};
 
 	/**
@@ -180,7 +194,7 @@ public interface IComparable<T>
 	DEFAULT_ALPHABETICAL_STRING_COMPERABLE = (String source, String other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
@@ -209,7 +223,7 @@ public interface IComparable<T>
 		else if(source.length() < other.length())
 			return IComparable.EComparisonResult.AFTER;
 		else
-			return IComparable.EComparisonResult.EQUALS;
+			return IComparable.EComparisonResult.EQUAL;
 	};
 
 	/**
@@ -219,7 +233,7 @@ public interface IComparable<T>
 	= (String source, String other) ->
 	{
 		if(source == other)
-			return EComparisonResult.EQUALS;
+			return EComparisonResult.EQUAL;
 		else if(source == null)
 			return EComparisonResult.BEFORE;
 		else if(other == null)
@@ -230,7 +244,7 @@ public interface IComparable<T>
 		else if(source.length() < other.length())
 			return IComparable.EComparisonResult.AFTER;
 		else
-			return IComparable.EComparisonResult.EQUALS;
+			return IComparable.EComparisonResult.EQUAL;
 	};
 
 	/**
@@ -332,7 +346,7 @@ public interface IComparable<T>
 	 * conventions (A and B are two instances of T, A being the parameter 
 	 * 'source' and B being 'other'):<br>
 	 * -If if does not matter, if the order is AB or BA, the method should 
-	 * return {@link EComparisonResult}.EQUALS.<br>
+	 * return {@link EComparisonResult}.EQUAL.<br>
 	 * -If the order must be AB, the method should 
 	 * return {@link EComparisonResult}.AFTER (Because A is after B).<br> 
 	 * -If the order must be BA, the method should 
@@ -374,12 +388,23 @@ public interface IComparable<T>
 		/**
 		 * The result, if the objects are equal.
 		 */
-		EQUALS;
+		EQUAL,
+		
+		/**
+		 * The result, if the compared elements are not equal. This must 
+		 * never be used in {@link IComparable}, only in 
+		 * {@link ISearchCondition}, if <code>.canSearchBinary()</code>
+		 * returns true. Look up the documentation of <code>
+		 * .canSearchBinary()</code> for further information.
+		 * 
+		 * @see ISearchCondition
+		 */
+		UNEQUAL;
 		
 		/**
 		 * Returns a new {@link EComparisonResult}, but with a inverted 
-		 * value (BEVORE becomes AFTER, AFTER becomes BEVORE and EQUALS 
-		 * stays EQUALS).
+		 * value (BEVORE becomes AFTER, AFTER becomes BEVORE and EQUAL
+		 * and UNEQUAL stay the same).
 		 * 
 		 * @return The inverted result.
 		 */
@@ -391,9 +416,10 @@ public interface IComparable<T>
 					return AFTER;
 				case AFTER:
 					return BEFORE;
-				case EQUALS:
+				case UNEQUAL:
+				case EQUAL:
 				default: //This case never happens.
-					return EQUALS;
+					return this;
 			}
 		}
 	}

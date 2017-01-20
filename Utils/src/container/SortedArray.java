@@ -65,6 +65,8 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	protected IComparable<T> comparable;
 
+	protected ISearchCondition<T, T> standartSearchCondition;
+	
 	/**
 	 * The array that stores all the values.<br>
 	 * This array always remains sorted.
@@ -93,6 +95,8 @@ public class SortedArray<T> implements Iterable<T>
 		
 		this.comparable = comparable;
 		this.elements = new Object[maxSize];
+		
+		this.standartSearchCondition = makeStandartSearchCondition();
 	}
 	
 	/**
@@ -128,6 +132,8 @@ public class SortedArray<T> implements Iterable<T>
 		this.comparable = comparable;
 		this.elements = checkSizeAndCopyArray(elements, size);
 		this.currentSize = elements.length;
+		
+		this.standartSearchCondition = makeStandartSearchCondition();
 		
 		algorithm.sort(comparable, (T[]) this.elements);
 	}
@@ -222,6 +228,24 @@ public class SortedArray<T> implements Iterable<T>
 		return arr;
 	}
 	
+	protected ISearchCondition<T, T> makeStandartSearchCondition()
+	{
+		return new ISearchCondition<T, T>()
+		{
+			@Override
+			public EComparisonResult isCorrectElement(T element, T customObj)
+			{
+				return comparable.compare(element, customObj);
+			}
+			
+			@Override
+			public boolean canSearchBinary()
+			{
+				return true;
+			}
+		};
+	}
+	
 	/**
 	 * Adds a new Element to the array while remaining the order.
 	 * 
@@ -309,42 +333,16 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	public int find(T element)
 	{
-		/*
-		 * Checks if the element to search for would be before or after the 
-		 * bounds of the array, which means it is not within the array.
-		 */
-		if(checkValueOutOfBounds(element))
-		{
-			return -1;
-		}
-		
-		int leftBorder = 0;
-		int rightBorder = currentSize - 1;
-		int middle = (leftBorder + rightBorder) / 2;
-		
-		while(leftBorder <= rightBorder)
-		{
-			IComparable.EComparisonResult result = 
-					comparable.compare(cast(elements[middle]), element);
-			
-			if(result == IComparable.EComparisonResult.EQUALS)
-				return middle;
-			else if(result == IComparable.EComparisonResult.BEFORE)
-				rightBorder = middle - 1;
-			else
-				leftBorder = middle + 1;
-			
-			middle = (leftBorder + rightBorder) / 2;
-		}
-		
-		return -1;
+		return find(standartSearchCondition, element);
 	}
 	
 	/**
 	 * Finds the first element in the container that has a certain trait (that 
 	 * is specified in the {@link ISearchCondition}) and returns its index
 	 * (or -1 if it could not be found).<br>
-	 * Note: This is generally slower than find(T), since this method searches
+	 * Note: If <code>.canSearchBinary()</code> in the {@link ISearchCondition} 
+	 * returns false (which it does by default), then this is much slower than
+	 * <code>.find(T element)</code> since this method will then search
 	 * sequentially.
 	 * 
 	 * @param condition	The {@link ISearchCondition} by which to identify the 
@@ -360,10 +358,85 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	public <T1> int find(ISearchCondition<T, T1> condition, T1 customObj)
 	{
+		if(!condition.canSearchBinary())
+			return findSequentially(condition, customObj);
+		else
+			return findBinary(condition, customObj);
+		
+	}
+	
+	/**
+	 * A helper to <code>.find(ISearchCondition<T, T1> condition,
+	 *  T1 customObj)</code> that is called when that method needs to search
+	 *  sequentially. Parameter are the same that were passed to said <code>
+	 *  .find(...)</code>.
+	 *  
+	 * @param condition	See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>
+	 * @param customObj	See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>
+	 *  @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>.
+	 *  
+	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>.
+	 */
+	protected <T1> int findSequentially(ISearchCondition<T, T1> condition, 
+																	T1 customObj)
+	{
 		for(int i = 0; i < getCurrentSize(); i++)
 		{
-			if(condition.isCorrectElement(get(i), customObj))
+			if(condition.isCorrectElement(get(i), customObj) 
+												== EComparisonResult.EQUAL)
 				return i;
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * A helper to <code>.find(ISearchCondition<T, T1> condition,
+	 *  T1 customObj)</code> that is called when that method needs to search
+	 *  binary. Parameter are the same that were passed to said <code>
+	 *  .find(...)</code>.
+	 *  
+	 * @param condition	See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>
+	 * @param customObj	See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>
+	 *  @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>.
+	 *  
+	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
+	 *  				T1 customObj)</code>.
+	 */
+	protected <T1> int findBinary(ISearchCondition<T, T1> condition, T1 customObj)
+	{
+		if(	condition.isCorrectElement(get(0), customObj)
+													== EComparisonResult.BEFORE ||
+			condition.isCorrectElement(get(getCurrentSize() - 1), customObj)
+													== EComparisonResult.AFTER)
+		{
+			return -1;
+		}
+		
+		int leftBorder = 0;
+		int rightBorder = currentSize - 1;
+		int middle = (leftBorder + rightBorder) / 2;
+		
+		while(leftBorder <= rightBorder)
+		{
+			IComparable.EComparisonResult result = 
+							condition.isCorrectElement(get(middle), customObj);
+			
+			if(result == IComparable.EComparisonResult.EQUAL)
+				return middle;
+			else if(result == IComparable.EComparisonResult.BEFORE)
+				rightBorder = middle - 1;
+			else
+				leftBorder = middle + 1;
+			
+			middle = (leftBorder + rightBorder) / 2;
 		}
 		
 		return -1;

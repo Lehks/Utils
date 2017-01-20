@@ -1,6 +1,7 @@
 package container.sorting;
 
 import container.SortedArray;
+import container.sorting.IComparable.EComparisonResult;
 
 /**
  * A class that is used to search in an {@link SortedArray} for an element with 
@@ -53,5 +54,10 @@ public interface ISearchCondition<T, T1>
 	 * 					into this method.
 	 * @return			True, if 'element' is the correct one, false if not.
 	 */
-	public boolean isCorrectElement(T element, T1 customObj);
+	public EComparisonResult isCorrectElement(T element, T1 customObj);
+	
+	public default boolean canSearchBinary()
+	{
+		return false;
+	}
 }
