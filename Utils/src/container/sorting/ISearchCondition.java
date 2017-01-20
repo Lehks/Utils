@@ -4,45 +4,81 @@ import container.SortedArray;
 import container.sorting.IComparable.EComparisonResult;
 
 /**
- * A class that is used to search in an {@link SortedArray} for an element with 
- * a certain trait (which is defined by the user). This interface is used by 
- * <code>{@link SortedArray}.find(ISearchCondition, T1)</code><br>
- * This is used to compare e.g. the returned value of a method in the type that
- * is stored in the {@link SortedArray} against another value (that is passed 
- * to the ISearchCondition though the parameter 'customObj'). The 
- * {@link SortedArray} calls <code>.isCorrectElement(...)</code> with every 
- * element in the array until it return true.<br>
+ * A class that allows to search though a {@link SortedArray} using the method
+ * <code>.find(ISearchCondition, T1)</code> without needing an instance of the 
+ * object should be found. {@link SortedArray} passes an element to 
+ * <code>.isCorrectElement(...)</code> that it is currently checking 
+ * if it is the right element. It also passes a custom object to method. This
+ * custom object was passed by the caller of <code>.find(ISearchCondition, T1)
+ * </code>. This custom object is meant to be used to be compared against
+ * values in the element.<br>
  * <br>
  * Example:<br>
- * 'Person' represents a Person that has an unique ID (which is returned by 
- * <code>.getId()</code> and is an Integer).
- * 'array' is a {@link SortedArray} of type 'Person' that is already filled 
- * with some references to different Persons.<br>
- * <br><pre><code>
-array.find(new ISearchCondition&lt;Person, Integer&gt;()
+ * In this example, '<code>Person</code>' is a class that holds information 
+ * about a person's name (which can be retrieved with <code>.getName()</code>) 
+ * and each instance has an ID assigned to it (which can be retrieved with 
+ * <code>.getID()</code>).
+ * Furthermore, '<code>array</code>' is an instance of {@link SortedArray} that
+ * holds references to instances of <code>Person</code>. The array is sorted
+ * after the IDs in an increasing order.<br>
+ * <pre><code>
+array.find(new ISearchCondition<Person, String>()
 {
 	{@literal @}Override
-	public boolean isCorrectElement(Person element, Integer customObj)
+	public EComparisonResult isCorrectElement(Person element,
+			String customObj)
 	{
-		/{@literal *}
-		 {@literal *} The ID that was given to .find(...) (1234) was passed to 
-		 {@literal *} .isCorrectElement(...).
-		 {@literal *}/
-		return element.getId() == customObj;
+		return (element.getName() == customObj ? 
+				EComparisonResult.EQUAL : EComparisonResult.UNEQUAL);
+	}
+}, "Josh Meyer");
+ * </code></pre>
+ * In this case, <code>.find(...)</code> would search for first Person in
+ * the {@link SortedArray} with the name "Josh Meyer" sequentially. When 
+ * searching sequentially, <code>.isCorrectElement()</code> may only two
+ * values: {@link EComparisonResult}.EQUAL, if the currently checked element
+ * is the correct one, {@link EComparisonResult}.UNEQAL, if not.<br>
+ * <br>
+ * Since this searching is done sequentially, but in some special cases, this 
+ * searching can be done binary. In the following example, the 
+ * {@link ISearchCondition} is configured in a way, that it searches for a
+ * person with an specific ID (which can be done binary, because the array is
+ * sorted after the IDs).<br>
+ * <pre><code>
+array.find(new ISearchCondition<Person, Integer>()
+{
+	{@literal @}Override
+	public EComparisonResult isCorrectElement(Person element,
+			Integer customObj)
+	{
+		if(customObj.equals(element.getID()))
+			return EComparisonResult.EQUAL;
+		else if(customObj > element.getID())
+			return EComparisonResult.AFTER;
+		else
+			return EComparisonResult.BEFORE;
 	}
 }, 1234);
- * </code></pre><br>
- * <br>
- * In this case, the {@link SortedArray} tried to find the Person with the ID
- * 1234.
+ * </code></pre>
+ * In this case, the {@link ISearchCondition} works very much like an 
+ * {@link IComparable} and returns {@link EComparisonResult}.EQUAL, if the 
+ * element is the correct one and {@link EComparisonResult}.BEFORE or 
+ * {@link EComparisonResult}.AFTER, depending on the element to find relative
+ * to the currently checked element.
  * 
  * @author 	Lukas Reichmann
- * @version 1.0
- * @see 	SortedArray
+ * @version	1.0
+ * @see		SortedArray
+ * @see		EComparisonResult
  *
  * @param <T>	The type of the elements in the {@link SortedArray}.
  * @param <T1>	The type of the custom object.
  */
+
+
+
+
+
 public interface ISearchCondition<T, T1>
 {
 	/**
@@ -52,10 +88,31 @@ public interface ISearchCondition<T, T1>
 	 * 					right one.
 	 * @param customObj	An Object that can be used to get necessary information
 	 * 					into this method.
-	 * @return			True, if 'element' is the correct one, false if not.
+	 * @return			In the case that searching is done sequentially: 
+	 * 					{@link EComparisonResult}.EQUAL, if 'element' is the 
+	 * 					correct one, {@link EComparisonResult}.UNEQUAL if not;
+	 * 					In the case that searching is done sequentially: 
+	 * 					{@link EComparisonResult}.EQUAL, if 'element' is the 
+	 * 					correct one, {@link EComparisonResult}.BEFORE, if the
+	 * 					correct element is before the current element and
+	 * 					{@link EComparisonResult}.AFTER if it is after the
+	 * 					current element.
 	 */
 	public EComparisonResult isCorrectElement(T element, T1 customObj);
 	
+	/**
+	 * If this returns true, <code>SortedArray.find(ISearchCondition, T1)
+	 * </code> can search binary. Note that this only works if <code>
+	 * .isCorrectElement(...)</code> supports this operation. If not, said 
+	 * <code>.find(...)</code> will most likely return a wrong result.<br>
+	 * <br>
+	 * The default implementation does nothing but returning <code>false
+	 * </code>. Overriding this method makes only sense, if <code>true</code>
+	 * should be returned.
+	 * 
+	 * @return 	True, if <code>.isCorrectElement(...)</code> allows it to 
+	 * 			search binary, false if not.
+	 */
 	public default boolean canSearchBinary()
 	{
 		return false;

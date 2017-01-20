@@ -368,7 +368,7 @@ public interface IComparable<T>
 	 * 
 	 * @author 	Lukas Reichmann
 	 * @version	1.0
-	 * @see 	EComparisonResult
+	 * @see 	IComparable
 	 * 
 	 */
 	public enum EComparisonResult

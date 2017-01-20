@@ -65,6 +65,10 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	protected IComparable<T> comparable;
 
+	/**
+	 * The {@link ISearchCondition} that will be used by <code>.find(T element)
+	 * </code>.
+	 */
 	protected ISearchCondition<T, T> standartSearchCondition;
 	
 	/**
@@ -228,6 +232,12 @@ public class SortedArray<T> implements Iterable<T>
 		return arr;
 	}
 	
+	/**
+	 * Constructs the value for 'standartSearchCondition' (but does not set 
+	 * it).
+	 * 
+	 * @return The constructed {@link ISearchCondition}.
+	 */
 	protected ISearchCondition<T, T> makeStandartSearchCondition()
 	{
 		return new ISearchCondition<T, T>()
@@ -342,7 +352,7 @@ public class SortedArray<T> implements Iterable<T>
 	 * (or -1 if it could not be found).<br>
 	 * Note: If <code>.canSearchBinary()</code> in the {@link ISearchCondition} 
 	 * returns false (which it does by default), then this is much slower than
-	 * <code>.find(T element)</code> since this method will then search
+	 * <code>.find(T element)</code>, since this method will then search
 	 * sequentially.
 	 * 
 	 * @param condition	The {@link ISearchCondition} by which to identify the 
@@ -382,7 +392,7 @@ public class SortedArray<T> implements Iterable<T>
 	 *  				T1 customObj)</code>.
 	 */
 	protected <T1> int findSequentially(ISearchCondition<T, T1> condition, 
-																	T1 customObj)
+																T1 customObj)
 	{
 		for(int i = 0; i < getCurrentSize(); i++)
 		{
@@ -410,12 +420,16 @@ public class SortedArray<T> implements Iterable<T>
 	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
 	 *  				T1 customObj)</code>.
 	 */
-	protected <T1> int findBinary(ISearchCondition<T, T1> condition, T1 customObj)
+	protected <T1> int findBinary(ISearchCondition<T, T1> condition, 
+																T1 customObj)
 	{
+		/*
+		 * Check if the value would be before or after the bounds of the array. 
+		 */
 		if(	condition.isCorrectElement(get(0), customObj)
-													== EComparisonResult.BEFORE ||
+												== EComparisonResult.BEFORE ||
 			condition.isCorrectElement(get(getCurrentSize() - 1), customObj)
-													== EComparisonResult.AFTER)
+												== EComparisonResult.AFTER)
 		{
 			return -1;
 		}
