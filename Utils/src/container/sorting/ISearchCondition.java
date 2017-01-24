@@ -22,7 +22,7 @@ import container.sorting.IComparable.EComparisonResult;
  * holds references to instances of <code>Person</code>. The array is sorted
  * after the IDs in an increasing order.<br>
  * <pre><code>
-array.find(new ISearchCondition<Person, String>()
+array.find(new ISearchCondition&lt;Person, String&gt;()
 {
 	{@literal @}Override
 	public EComparisonResult isCorrectElement(Person element,
@@ -45,7 +45,7 @@ array.find(new ISearchCondition<Person, String>()
  * person with an specific ID (which can be done binary, because the array is
  * sorted after the IDs).<br>
  * <pre><code>
-array.find(new ISearchCondition<Person, Integer>()
+array.find(new ISearchCondition&lt;Person, Integer&gt;()
 {
 	{@literal @}Override
 	public EComparisonResult isCorrectElement(Person element,
@@ -53,7 +53,7 @@ array.find(new ISearchCondition<Person, Integer>()
 	{
 		if(customObj.equals(element.getID()))
 			return EComparisonResult.EQUAL;
-		else if(customObj > element.getID())
+		else if(customObj &gt; element.getID())
 			return EComparisonResult.AFTER;
 		else
 			return EComparisonResult.BEFORE;

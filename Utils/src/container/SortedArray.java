@@ -36,6 +36,14 @@ import utils.Utils;
 public class SortedArray<T> implements Iterable<T>
 {
 	/**
+	 * This is the return of any <code>.find(...)</code> method, if the element
+	 * that was searched for could not be found.<br>
+	 * <code>.get(INVALID_INDEX)</code> will always result in an 
+	 * {@link ArrayIndexOutOfBoundsException}.
+	 */
+	public static final int INVALID_INDEX = -1;
+	
+	/**
 	 * The message that is being given to a ArrayIndexOutOfBoundsException if
 	 * the array is full.
 	 */
@@ -304,8 +312,16 @@ public class SortedArray<T> implements Iterable<T>
 	{
 		int result = find(element);
 		
-		if(result != -1)
+		if(result != INVALID_INDEX)
 			shiftLeft(result);
+	}
+	
+	public <T1> void delete(ISearchCondition<T, T1> condition, T1 customObj)
+	{
+		int index = find(condition, customObj);
+		
+		if(index != INVALID_INDEX)
+			delete(get(index));
 	}
 
 	/**
@@ -335,11 +351,12 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Finds an element and returns its index. Returns -1 if element could not
-	 * be found.
+	 * Finds an element and returns its index. Returns INVALID_INDEX if element 
+	 * could not be found.
 	 * 
 	 * @param element 	The element to search for.
-	 * @return			The index of the element, or -1 if not found.
+	 * @return			The index of the element, or INVALID_INDEX if not 
+	 * 					found.
 	 */
 	public int find(T element)
 	{
@@ -349,7 +366,7 @@ public class SortedArray<T> implements Iterable<T>
 	/**
 	 * Finds the first element in the container that has a certain trait (that 
 	 * is specified in the {@link ISearchCondition}) and returns its index
-	 * (or -1 if it could not be found).<br>
+	 * (or INVALID_INDEX if it could not be found).<br>
 	 * Note: If <code>.canSearchBinary()</code> in the {@link ISearchCondition} 
 	 * returns false (which it does by default), then this is much slower than
 	 * <code>.find(T element)</code>, since this method will then search
@@ -360,7 +377,8 @@ public class SortedArray<T> implements Iterable<T>
 	 * @param customObj	The custom object used in {@link ISearchCondition}. 
 	 * 					See the documentation of that class for further 
 	 * 					information.
-	 * @return			The index of the element if it was found, if not -1.
+	 * @return			The index of the element if it was found, if not 
+	 * 					INVALID_INDEX.
 	 * 
 	 * @param <T1>		Type of the custom object.
 	 * 
@@ -385,7 +403,7 @@ public class SortedArray<T> implements Iterable<T>
 	 *  				T1 customObj)</code>
 	 * @param customObj	See <code>.find(ISearchCondition<T, T1> condition,
 	 *  				T1 customObj)</code>
-	 *  @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
+	 * @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
 	 *  				T1 customObj)</code>.
 	 *  
 	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
@@ -401,7 +419,7 @@ public class SortedArray<T> implements Iterable<T>
 				return i;
 		}
 		
-		return -1;
+		return INVALID_INDEX;
 	}
 	
 	/**
@@ -414,7 +432,7 @@ public class SortedArray<T> implements Iterable<T>
 	 *  				T1 customObj)</code>
 	 * @param customObj	See <code>.find(ISearchCondition<T, T1> condition,
 	 *  				T1 customObj)</code>
-	 *  @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
+	 * @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
 	 *  				T1 customObj)</code>.
 	 *  
 	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
@@ -431,7 +449,7 @@ public class SortedArray<T> implements Iterable<T>
 			condition.isCorrectElement(get(getCurrentSize() - 1), customObj)
 												== EComparisonResult.AFTER)
 		{
-			return -1;
+			return INVALID_INDEX;
 		}
 		
 		int leftBorder = 0;
@@ -453,7 +471,7 @@ public class SortedArray<T> implements Iterable<T>
 			middle = (leftBorder + rightBorder) / 2;
 		}
 		
-		return -1;
+		return INVALID_INDEX;
 	}
 	
 	/**
@@ -464,7 +482,7 @@ public class SortedArray<T> implements Iterable<T>
 	 */
 	public boolean contains(T element)
 	{
-		return find(element) != -1;
+		return find(element) != INVALID_INDEX;
 	}
 	
 	/**
