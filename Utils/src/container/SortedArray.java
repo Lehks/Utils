@@ -316,6 +316,17 @@ public class SortedArray<T> implements Iterable<T>
 			shiftLeft(result);
 	}
 	
+	/**
+	 * Deletes the first object that is described by the passed
+	 * {@link ISearchCondition}. If the element could not be found, nothing
+	 * will happen.
+	 * 
+	 * @param condition	The condition by which to identify the element that 
+	 * 					should be deleted.
+	 * @param customObj	Custom object that will be passed to the condition.
+	 * 
+	 * @param <T1>		Type of the custom object.
+	 */
 	public <T1> void delete(ISearchCondition<T, T1> condition, T1 customObj)
 	{
 		int index = find(condition, customObj);
