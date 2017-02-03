@@ -2,42 +2,61 @@ package utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import exception.SizeMismatchException;
+import exception.StorageFileException;
+
 public class StorageFile
 {
 	public static final String MSG_KEY_ALREADY_EXISTING = 
-													"The key %s already exists.";
+								"The key \"%s\" in line %d already exists.";
+	
+	public static final String MSG_INVALID_LINE = 
+														"Line %d is invalid.";
 	
 	public static final char COMMENT_PREFIX = '#';
+	public static final char PATH_SEPARATOR = '.';
+	private static final String PATH_SEPERATOR_REGEX 
+												= "[" + PATH_SEPARATOR + "]";
 	
 	private Entry rootEntry;
 	
 	private Scanner scanner;
 	
-	private Pattern pattern = Pattern.compile("\"([^/.]*)\"=\"(.*)\"");
+	private File file;
+
+	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
+	private static final String SUBPATTERN_ANY_KEY_OR_VALUE = "\"([^/.]*)\"";
+	
+	private static final Pattern patternValue = Pattern.compile("^" 
+											+ SUBPATTERN_ANY_TAB
+											+ SUBPATTERN_ANY_KEY_OR_VALUE 
+											+ "=" + SUBPATTERN_ANY_KEY_OR_VALUE
+											+ "$");
+	
+	private Pattern patternNoValue = Pattern.compile("^" 
+											+ SUBPATTERN_ANY_TAB 
+											+ SUBPATTERN_ANY_KEY_OR_VALUE
+											+ "$");
 	
 	private ArrayList<String> commentBuffer = new ArrayList<>();
 	
 	public StorageFile(File file) throws FileNotFoundException
 	{
-		scanner = new Scanner(file);
-		rootEntry = new Entry(null, "ROOT", "ROOT");
+		this.file = file;
+		this.scanner = new Scanner(file);
+		this.rootEntry = new Entry(null, "ROOT", "ROOT");
 		
 		load();
 		
 		scanner.close();
-		
-		
-		StringBuilder sb = new StringBuilder();
-		
-		rootEntry.asPrintable(sb, -1);
-		
-		System.out.println(sb);
 	}
 	
 	public StorageFile(String path) throws FileNotFoundException
@@ -47,33 +66,80 @@ public class StorageFile
 	
 	private void load()
 	{
-		int lastDepth = 0;
-		Entry lastChild = null;
-		Entry lastParent = rootEntry;
+		int lastDepth = 0;				//Depth of the last entry
+		Entry lastChild = null;			//The last Entry that was added
+		Entry lastParent = rootEntry;	//The parent of lastChild
+		
+		int line = 0;					//The line that is currently processed
 		
 		while(scanner.hasNextLine())
 		{
+			line++;
+			
 			String nextLine = scanner.nextLine();
-			String trimmedLine = nextLine.trim();
 			
-			if(trimmedLine.isEmpty())
-				continue; 	//If the current line is empty, there is no need to go 
-							//further on
+			if(nextLine.trim().isEmpty())
+				continue; 	//If the current line is empty, there is no need 
+							//to go on
 			
-			Entry currentEntry = makeEntry(nextLine, trimmedLine);
+			//Check if the line is a comment
+			if(nextLine.charAt(0) == COMMENT_PREFIX)
+			{
+				commentBuffer.add(nextLine.substring(1));
+				continue; //If line is a comment, there is no need to go on
+			}
+
+			//Fill currentEntry and currentDepth using regex
+			int currentDepth = 0;
+			Entry currentEntry = null;
 			
-			if(currentEntry == null)
-				continue; 	//If made entry returned null, a comment has been 
-							//created => Can't put an Entry into the tree.
+			Matcher matcherValue = patternValue.matcher(nextLine);
+			Matcher matcherNoValue = patternNoValue.matcher(nextLine);
 			
-			int currentDepth = makeDepth(nextLine, lastDepth);
+			if(matcherValue.find()) //If this is a entry with a value
+			{
+				currentDepth = matcherValue.group(1).length();
+				currentEntry = new Entry(commentBuffer, matcherValue.group(2), 
+						matcherValue.group(3));
+			}
+			else if(matcherNoValue.find()) //If this is a entry without a value
+			{
+				currentDepth = matcherNoValue.group(1).length();
+				currentEntry = new Entry(commentBuffer, matcherNoValue.group(2), 
+						null);
+			}
+			else 	//If both matchers could not match the current line, then
+					//there is an invalid line -> error
+				throw new StorageFileException
+									(String.format(MSG_INVALID_LINE, line));
+			//-------------------------
 			
+			/*
+			 * If the loop has not been continued up to this point, this line
+			 * is not a comment and the new Entry has been created 
+			 * (=> this Entry's comments have been set), so the comment buffer
+			 * will be a new instance of ArrayList to prevent the comments of
+			 * the old entry from getting changed.
+			 */
+			commentBuffer = new ArrayList<>();
+			
+			//Add currentEntry to tree
 			if(lastDepth == currentDepth)
 			{
+				if(lastParent.hasChild(currentEntry.getLocalKey()))
+					throw new StorageFileException(
+									String.format(MSG_KEY_ALREADY_EXISTING, 
+											currentEntry.getLocalKey(), line));
+				
 				lastParent.addChild(currentEntry);
 			}
 			else if(lastDepth < currentDepth)
 			{
+				if(lastChild.hasChild(currentEntry.getLocalKey()))
+					throw new StorageFileException(
+							String.format(MSG_KEY_ALREADY_EXISTING, 
+									currentEntry.getLocalKey(), line));
+				
 				lastChild.addChild(currentEntry);
 				
 				lastParent = lastChild;
@@ -81,6 +147,11 @@ public class StorageFile
 			else
 			{
 				Entry parent = lastParent;
+
+				if(parent.hasChild(currentEntry.getLocalKey()))
+					throw new StorageFileException(
+							String.format(MSG_KEY_ALREADY_EXISTING, 
+									currentEntry.getLocalKey(), line));
 				
 				//Decrease depth until the correct depth has been reached
 				for(int counter = lastDepth; counter > currentDepth; counter--)
@@ -93,59 +164,67 @@ public class StorageFile
 			
 			lastChild = currentEntry;
 			lastDepth = currentDepth;
+			//-------------------------
 		}
-	}
-	
-	private Entry makeEntry(String nextLine, String trimmedLine)
-	{
-		if(nextLine.charAt(0) == COMMENT_PREFIX)
-		{
-			commentBuffer.add(nextLine.substring(1));
-			return null;
-		}
-		
-		Matcher matcher = pattern.matcher(trimmedLine);
-		
-		if(!matcher.find())
-			throw new RuntimeException("3");
-		
-		Entry currentEntry = new Entry(commentBuffer, matcher.group(1), 
-				matcher.group(2));
-		
-		commentBuffer = new ArrayList<>();
-		
-		return currentEntry;
-	}
-	
-	private int findFirstNotTab(String str)
-	{
-		for(int i = 0; i < str.length(); i++)
-			if(str.charAt(i) != '\t')
-				return i;
-		
-		return -1;
-	}
-	
-	private int makeDepth(String nextLine, int currentDepth)
-	{
-		int newDepth = findFirstNotTab(nextLine);
-		
-		if(newDepth == -1)
-			throw new RuntimeException("1");
-		else if(newDepth > currentDepth + 1)
-			throw new RuntimeException("2");
-		
-		return newDepth;
 	}
 	
 	public String get(String key)
 	{
-		String[] subkeys = {key};
-				
-		if(key.contains("."))
-			subkeys = key.split(".");
+		Entry entry = getEntry(key, false);
 		
-		return rootEntry.get(subkeys, 0);
+		if(entry != null)
+			return entry.getValue();
+		
+		return null;
+	}
+	
+	public void set(String key, String value)
+	{
+		Entry entry = getEntry(key, true);
+		
+		entry.setValue(value);
+	}
+	
+	private Entry getEntry(String key, boolean create)
+	{
+		String[] splitStrings = key.split(PATH_SEPERATOR_REGEX);
+		
+		String[] subkeys = new String[splitStrings.length + 1];
+				
+		System.arraycopy(splitStrings, 0, subkeys, 1, splitStrings.length);
+		
+		subkeys[0] = rootEntry.getLocalKey();
+		
+		return rootEntry.get(subkeys, 0, create);
+	}
+	
+	public void save(File file) throws IOException
+	{
+		FileWriter fw = new FileWriter(file);
+		
+		fw.append(toString());
+		
+		fw.close();
+	}
+	
+	public void save(String path) throws IOException
+	{
+		save(new File(path));
+	}
+
+	public void save() throws IOException
+	{
+		save(file);
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		rootEntry.asPrintable(sb, -1);
+		
+		return sb.toString();
 	}
 	
 	private class Entry
@@ -171,11 +250,6 @@ public class StorageFile
 			return parent;
 		}
 		
-		public LinkedList<Entry> getChildren()
-		{
-			return children;
-		}
-		
 		public void addChild(Entry child)
 		{
 			child.parent = this;
@@ -197,7 +271,16 @@ public class StorageFile
 			this.value = value;
 		}
 		
-		public String getGlobalKey()
+		public boolean hasChild(String key)
+		{
+			for(Entry e: children)
+				if(e.getLocalKey().equals(key))
+					return true;
+			
+			return false;
+		}
+		
+ 		public String getGlobalKey()
 		{
 			if(parent == rootEntry)
 				return getLocalKey();
@@ -216,31 +299,40 @@ public class StorageFile
 				for(int i = 0; i < layer; i++)
 					sb.append("\t");
 				
-				sb.append('"').append(getLocalKey()).append('"').append('=');
-				sb.append('"').append(getValue()).append('"').append('\n');
+				sb.append('"').append(getLocalKey()).append('"');
+				
+				if(getValue() != null)
+					sb.append('=').append('"').append(getValue()).append('"');
+				
+				sb.append('\n');
 			}
 			
 			for(Entry e: children)
 				e.asPrintable(sb, layer + 1);
 		}
 		
-		public String get(String[] subkeys, int index)
+		public Entry get(String[] subkeys, int index, boolean create)
 		{
-			System.out.println(index);
-			System.out.println(subkeys.length);
-			
 			if(index == subkeys.length - 1)
 			{
-				return this.value;
+				return this;
 			}
 			else
 			{
 				for(Entry child: children)
 				{
-					if(child.getLocalKey().equals(subkeys[index]))
+					if(child.getLocalKey().equals(subkeys[index + 1]))
 					{
-						return child.get(subkeys, index + 1);
+						return child.get(subkeys, index + 1, create);
 					}
+				}
+				
+				if(create)
+				{
+					System.out.println("i: " + subkeys[index + 1]);
+					
+					children.add(new Entry(new ArrayList<>(), subkeys[index + 1], null));
+					return children.get(children.size() - 1).get(subkeys, index + 1, create);
 				}
 				
 				return null;
