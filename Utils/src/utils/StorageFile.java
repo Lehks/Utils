@@ -35,7 +35,7 @@ public class StorageFile
 
 	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
 	private static final String SUBPATTERN_KEY = "\"([^/.]*)\"";
-	private static final String SUBPATTERN_VALUE = "\"([.]*)\"";
+	private static final String SUBPATTERN_VALUE = "\"(.*)\"";
 	
 	private static final Pattern patternValue = Pattern.compile("^" 
 											+ SUBPATTERN_ANY_TAB
