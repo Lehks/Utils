@@ -17,37 +17,42 @@ public class StorageFile
 	public static final String MSG_KEY_ALREADY_EXISTING = 
 								"The key \"%s\" in line %d already exists.";
 	
-	public static final String MSG_INVALID_LINE = 
-														"Line %d is invalid.";
+	public static final String MSG_INVALID_LINE = "Line %d is invalid.";
 	
-	public static final char COMMENT_PREFIX = '#';
-	public static final char PATH_SEPARATOR = '.';
+	private static final char COMMENT_PREFIX = '#';
+	private static final char PATH_SEPARATOR = '.';
+	private static final char KEY_VALUE_SEPARATOR = '=';
+	private static final char KEY_VALUE_PERIMETER = '"';
 	
+	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
 	
-	private static final String PATH_SEPERATOR_REGEX 
-												= "[" + PATH_SEPARATOR + "]";
+	private static final String SUBPATTERN_KEY = KEY_VALUE_PERIMETER 
+												+ "([^/.]*)" 
+												+ KEY_VALUE_PERIMETER;
+	
+	private static final String SUBPATTERN_VALUE = KEY_VALUE_PERIMETER 
+												+ "(.*)" 
+												+ KEY_VALUE_PERIMETER;
+	
+	private static final String PATH_SEPERATOR_REGEX = "[" + PATH_SEPARATOR + "]";
+	
+	private static final Pattern PATTERN_VALUE = Pattern.compile("^" 
+											+ SUBPATTERN_ANY_TAB
+											+ SUBPATTERN_KEY 
+											+ KEY_VALUE_SEPARATOR
+											+ SUBPATTERN_VALUE
+											+ "$");
+	
+	private Pattern PATTERN_NO_VALUE = Pattern.compile("^" 
+											+ SUBPATTERN_ANY_TAB 
+											+ SUBPATTERN_KEY
+											+ "$");
 	
 	private Entry rootEntry;
 	
 	private Scanner scanner;
 	
 	private File file;
-
-	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
-	private static final String SUBPATTERN_KEY = "\"([^/.]*)\"";
-	private static final String SUBPATTERN_VALUE = "\"(.*)\"";
-	
-	private static final Pattern patternValue = Pattern.compile("^" 
-											+ SUBPATTERN_ANY_TAB
-											+ SUBPATTERN_KEY 
-											+ "=" 
-											+ SUBPATTERN_VALUE
-											+ "$");
-	
-	private Pattern patternNoValue = Pattern.compile("^" 
-											+ SUBPATTERN_ANY_TAB 
-											+ SUBPATTERN_KEY
-											+ "$");
 	
 	private ArrayList<String> commentBuffer = new ArrayList<>();
 	
@@ -96,8 +101,8 @@ public class StorageFile
 			int currentDepth = 0;
 			Entry currentEntry = null;
 			
-			Matcher matcherValue = patternValue.matcher(nextLine);
-			Matcher matcherNoValue = patternNoValue.matcher(nextLine);
+			Matcher matcherValue = PATTERN_VALUE.matcher(nextLine);
+			Matcher matcherNoValue = PATTERN_NO_VALUE.matcher(nextLine);
 			
 			if(matcherValue.find()) //If this is a entry with a value
 			{
@@ -332,8 +337,6 @@ public class StorageFile
 				
 				if(create)
 				{
-					System.out.println("i: " + subkeys[index + 1]);
-					
 					children.add(new Entry(new ArrayList<>(), 
 													subkeys[index + 1], null));
 					return children.get(children.size() - 1).get
@@ -347,7 +350,9 @@ public class StorageFile
 		@Override
 		public String toString()
 		{
-			return "\"" + getGlobalKey() + "\"=\"" + getValue() + "\"";
+			return KEY_VALUE_PERIMETER + getGlobalKey() + KEY_VALUE_PERIMETER
+					+ KEY_VALUE_SEPARATOR + KEY_VALUE_PERIMETER
+					+ getValue() +KEY_VALUE_PERIMETER;
 		}
 	}
 }
