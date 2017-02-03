@@ -10,7 +10,6 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import exception.SizeMismatchException;
 import exception.StorageFileException;
 
 public class StorageFile
@@ -23,6 +22,8 @@ public class StorageFile
 	
 	public static final char COMMENT_PREFIX = '#';
 	public static final char PATH_SEPARATOR = '.';
+	
+	
 	private static final String PATH_SEPERATOR_REGEX 
 												= "[" + PATH_SEPARATOR + "]";
 	
@@ -33,17 +34,19 @@ public class StorageFile
 	private File file;
 
 	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
-	private static final String SUBPATTERN_ANY_KEY_OR_VALUE = "\"([^/.]*)\"";
+	private static final String SUBPATTERN_KEY = "\"([^/.]*)\"";
+	private static final String SUBPATTERN_VALUE = "\"([.]*)\"";
 	
 	private static final Pattern patternValue = Pattern.compile("^" 
 											+ SUBPATTERN_ANY_TAB
-											+ SUBPATTERN_ANY_KEY_OR_VALUE 
-											+ "=" + SUBPATTERN_ANY_KEY_OR_VALUE
+											+ SUBPATTERN_KEY 
+											+ "=" 
+											+ SUBPATTERN_VALUE
 											+ "$");
 	
 	private Pattern patternNoValue = Pattern.compile("^" 
 											+ SUBPATTERN_ANY_TAB 
-											+ SUBPATTERN_ANY_KEY_OR_VALUE
+											+ SUBPATTERN_KEY
 											+ "$");
 	
 	private ArrayList<String> commentBuffer = new ArrayList<>();
@@ -285,7 +288,7 @@ public class StorageFile
 			if(parent == rootEntry)
 				return getLocalKey();
 			else 
-				return parent.getGlobalKey() + "." + getLocalKey();
+				return parent.getGlobalKey() + PATH_SEPARATOR + getLocalKey();
 
 		}
 		
@@ -331,8 +334,10 @@ public class StorageFile
 				{
 					System.out.println("i: " + subkeys[index + 1]);
 					
-					children.add(new Entry(new ArrayList<>(), subkeys[index + 1], null));
-					return children.get(children.size() - 1).get(subkeys, index + 1, create);
+					children.add(new Entry(new ArrayList<>(), 
+													subkeys[index + 1], null));
+					return children.get(children.size() - 1).get
+												(subkeys, index + 1, create);
 				}
 				
 				return null;
