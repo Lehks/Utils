@@ -105,7 +105,7 @@ public class StorageFile
 	/**
 	 * The regex pattern that stands for a normal entry into a StorageFile.
 	 */
-	private Pattern PATTERN_NO_VALUE = Pattern.compile("^" 
+	private static final Pattern PATTERN_NO_VALUE = Pattern.compile("^" 
 											+ SUBPATTERN_ANY_TAB 
 											+ SUBPATTERN_KEY
 											+ "$");
