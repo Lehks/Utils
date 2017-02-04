@@ -191,32 +191,10 @@ public class StorageFile
 			}
 
 			//Fill currentEntry and currentDepth using regex
-			int currentDepth = 0;
+			Pointer<Integer> currentDepth = new Pointer<>(0);
 			Entry currentEntry = null;
 			
-			Matcher matcherValue = PATTERN_VALUE.matcher(nextLine);
-			Matcher matcherNoValue = PATTERN_NO_VALUE.matcher(nextLine);
-			
-			if(matcherValue.find()) //If this is a entry with a value
-			{
-				currentDepth = matcherValue.group(1).length();
-				currentEntry = new Entry(commentBuffer, matcherValue.group(2), 
-						matcherValue.group(3));
-			}
-			else if(matcherNoValue.find()) //If this is a entry without a value
-			{
-				currentDepth = matcherNoValue.group(1).length();
-				currentEntry = new Entry(commentBuffer, matcherNoValue.group(2), 
-						null);
-			}
-			else 	//If both matchers could not match the current line, then
-					//there is an invalid line -> error
-			{
-				scanner.close();
-				throw new StorageFileException
-									(String.format(MSG_INVALID_LINE, line));
-			}
-			//-------------------------
+			currentEntry = makeEntry(nextLine, currentDepth, commentBuffer, scanner, line);
 			
 			/*
 			 * If the loop has not been continued up to this point, this line
@@ -227,15 +205,40 @@ public class StorageFile
 			 */
 			commentBuffer = new ArrayList<>();
 			
-			lastParent = putEntryIntoTree(lastDepth, currentDepth, scanner, 
-								currentEntry, lastParent, lastChild, line);
+			lastParent = putEntryIntoTree(lastDepth, currentDepth.get(), 
+						scanner, currentEntry, lastParent, lastChild, line);
 			
 			lastChild = currentEntry;
-			lastDepth = currentDepth;
-			//-------------------------
+			lastDepth = currentDepth.get();
 		}
 		
 		scanner.close();
+	}
+	
+	private Entry makeEntry(String nextLine, Pointer<Integer> currentDepthPtr, 
+			ArrayList<String> commentBuffer, Scanner scanner, int line)
+	{
+		Matcher matcherValue = PATTERN_VALUE.matcher(nextLine);
+		Matcher matcherNoValue = PATTERN_NO_VALUE.matcher(nextLine);
+		
+		if(matcherValue.find()) //If this is a entry with a value
+		{
+			currentDepthPtr.set(matcherValue.group(1).length());
+			return new Entry(commentBuffer, matcherValue.group(2), 
+					matcherValue.group(3));
+		}
+		else if(matcherNoValue.find()) //If this is a entry without a value
+		{
+			currentDepthPtr.set(matcherNoValue.group(1).length());
+			return new Entry(commentBuffer, matcherNoValue.group(2), null);
+		}
+		else 	//If both matchers could not match the current line, then
+				//there is an invalid line -> error
+		{
+			scanner.close();
+			throw new StorageFileException
+								(String.format(MSG_INVALID_LINE, line));
+		}
 	}
 	
 	/**
