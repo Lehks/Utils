@@ -27,8 +27,18 @@ public class StorageFile
 	 */
 	public static final String MSG_INVALID_LINE = "Line %d is invalid.";
 	
+	/**
+	 * The message that is being printed, if the file that is passed to 
+	 * a constructor is actually a directory.
+	 */
 	public static final String MSG_FILE_IS_DIRECTORY = "The passed file is a "
 														+ "directory.";
+	
+	/**
+	 * The message that is being printed, if an entry has an invalid depth.
+	 */
+	public static final String MSG_INVALID_DEPTH = "The depth of the line in %s"
+															+ " is invalid.";
 	
 	/**
 	 * The character that marks a comment.
@@ -217,35 +227,8 @@ public class StorageFile
 			 */
 			commentBuffer = new ArrayList<>();
 			
-			//Add currentEntry to tree
-			if(lastDepth == currentDepth)
-			{
-				checkKey(scanner, lastParent, currentEntry.getLocalKey(), line);
-				
-				lastParent.addChild(currentEntry);
-			}
-			else if(lastDepth < currentDepth)
-			{
-				checkKey(scanner, lastChild, currentEntry.getLocalKey(), line);
-				
-				lastChild.addChild(currentEntry);
-				
-				lastParent = lastChild;
-			}
-			else
-			{
-				Entry parent = lastParent;
-
-				//Decrease depth until the correct depth has been reached
-				for(int counter = lastDepth; counter > currentDepth; counter--)
-					parent = parent.getParent();
-				
-				checkKey(scanner, parent, currentEntry.getLocalKey(), line);
-				
-				parent.addChild(currentEntry);
-				
-				lastParent = parent;
-			}
+			lastParent = putEntryIntoTree(lastDepth, currentDepth, scanner, 
+								currentEntry, lastParent, lastChild, line);
 			
 			lastChild = currentEntry;
 			lastDepth = currentDepth;
@@ -253,6 +236,61 @@ public class StorageFile
 		}
 		
 		scanner.close();
+	}
+	
+	/**
+	 * Puts 'currentEntry' into the tree structure. This method is only used
+	 * in <code>.load()</code>.<br>
+	 * Returns the new value for 'lastParent' in .load().
+	 * 
+	 * @param lastDepth		The depth of the last entry.
+	 * @param currentDepth	The depth of the current entry.
+	 * @param scanner		The scanner that is used to read the file.
+	 * @param currentEntry	The entry to add.
+	 * @param lastParent	The parent of the last entry.
+	 * @param lastChild		The child that was added the last time.
+	 * @param line			The current line in the file.
+	 */
+	private Entry putEntryIntoTree(int lastDepth, int currentDepth, 
+			Scanner scanner, Entry currentEntry, Entry lastParent, 
+			Entry lastChild, int line)
+	{
+		if (lastDepth == currentDepth)
+		{
+			checkKey(scanner, lastParent, currentEntry.getLocalKey(), line);
+
+			lastParent.addChild(currentEntry);
+			
+			return lastParent;
+		}
+		
+		if (lastDepth == currentDepth - 1)
+		{
+			checkKey(scanner, lastChild, currentEntry.getLocalKey(), line);
+
+			lastChild.addChild(currentEntry);
+
+			return lastChild;
+		}
+		
+		if (lastDepth > currentDepth)
+		{
+			Entry parent = lastParent;
+
+			// Decrease depth until the correct depth has been reached
+			for (int counter = lastDepth; counter > currentDepth; counter--)
+				parent = parent.getParent();
+
+			checkKey(scanner, parent, currentEntry.getLocalKey(), line);
+
+			parent.addChild(currentEntry);
+
+			return parent;
+		}
+		
+		//If none of the cases above matched, currentDepth is invalid
+		//(most likely currentDepth > (lastDepth + 1))
+		throw new StorageFileException(String.format(MSG_INVALID_DEPTH, line));
 	}
 	
 	/**
