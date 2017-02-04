@@ -1,4 +1,4 @@
-package utils;
+package file.storageFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import exception.StorageFileException;
+import utils.Pointer;
 
 public class StorageFile
 {
