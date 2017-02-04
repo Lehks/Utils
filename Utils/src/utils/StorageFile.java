@@ -340,6 +340,26 @@ public class StorageFile
 	}
 	
 	/**
+	 * Returns weather an entry with the passed key already exists or not.
+	 * 
+	 * @param key	The key of the entry to search for.
+	 * @return		True, if it exsists, false if not.
+	 */
+	public boolean contains(String key)
+	{
+		return getEntry(key, false) != null;
+	}
+	
+	/**
+	 * Returns the file that was passed to the constructor.
+	 * @return The file.
+	 */
+	public File getFile()
+	{
+		return file;
+	}
+	
+	/**
 	 * Saves the StorageFile to the specified file.
 	 * 
 	 * @param file			The file to save to. If this file does not exist 
