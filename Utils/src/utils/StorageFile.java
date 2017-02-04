@@ -501,11 +501,23 @@ public class StorageFile
 			return value;
 		}
 		
+		/**
+		 * Sets a new value for this entry.
+		 * 
+		 * @param value The new value.
+		 */
 		public void setValue(String value)
 		{
 			this.value = value;
 		}
 		
+		/**
+		 * Checks if this entry has a child with the local key child.
+		 * 
+		 * @param key 	The local key to check.
+		 * @return		True, if a child with the passed key exists, false if
+		 * 				not.
+		 */
 		public boolean hasChild(String key)
 		{
 			for(Entry e: children)
@@ -515,20 +527,6 @@ public class StorageFile
 			return false;
 		}
 
-		/**
-		 * Constructs and returns the global key.
-		 * 
-		 * @return The global key.
-		 */
- 		public String getGlobalKey()
-		{
-			if(parent == rootEntry)
-				return getLocalKey();
-			else 
-				return parent.getGlobalKey() + PATH_SEPARATOR + getLocalKey();
-
-		}
-		
  		/**
  		 * Writes this entry and all of it's children to the passed 
  		 * {@link StringBuilder}.
