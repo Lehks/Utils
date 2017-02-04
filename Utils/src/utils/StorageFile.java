@@ -255,6 +255,10 @@ public class StorageFile
 			Scanner scanner, Entry currentEntry, Entry lastParent, 
 			Entry lastChild, int line)
 	{
+		/*
+		 * If the current entry has the same depth as the last one (=> the 
+		 * current and last entry share the same parent).
+		 */
 		if (lastDepth == currentDepth)
 		{
 			checkKey(scanner, lastParent, currentEntry.getLocalKey(), line);
@@ -264,6 +268,10 @@ public class StorageFile
 			return lastParent;
 		}
 		
+		/*
+		 * If the current entry's depth is exactly one higher than the last one
+		 * (=> the current entry is a child of the last one).
+		 */
 		if (lastDepth == currentDepth - 1)
 		{
 			checkKey(scanner, lastChild, currentEntry.getLocalKey(), line);
@@ -273,6 +281,9 @@ public class StorageFile
 			return lastChild;
 		}
 		
+		/*
+		 * If the current entry's depth is smaller of the last one 
+		 */
 		if (lastDepth > currentDepth)
 		{
 			Entry parent = lastParent;
@@ -288,8 +299,10 @@ public class StorageFile
 			return parent;
 		}
 		
-		//If none of the cases above matched, currentDepth is invalid
-		//(most likely currentDepth > (lastDepth + 1))
+		/*
+		 * If none of the cases above matched, currentDepth is invalid
+		 * (most likely currentDepth > (lastDepth + 1)).
+		 */
 		throw new StorageFileException(String.format(MSG_INVALID_DEPTH, line));
 	}
 	
