@@ -10,17 +10,44 @@ import exception.StorageFileException;
 
 public class StorageFileLoader
 {
+	/**
+	 * The scanner that reads the file to load.
+	 */
 	private Scanner scanner;
 	
+	/**
+	 * The number of the line that is currently processed.
+	 */
 	private int line = 0;
 	
+	/**
+	 * The line that is currently processed.
+	 */
 	private String currentLine;
 	
+	/**
+	 * The buffer that stores all the comments for the next entry.
+	 */
 	private ArrayList<String> commentBuffer = new ArrayList<>();
 	
+	/**
+	 * The depth of the last entry.
+	 */
 	private int lastDepth = 0;
+	
+	/**
+	 * The depth of the current entry.
+	 */
 	private int currentDepth = 0;
+	
+	/**
+	 * The entry that was added the last time.
+	 */
 	private Entry lastChild = null;
+	
+	/**
+	 * The parent of lastChild.
+	 */
 	private Entry lastParent;
 	
 	public Entry load(File file) throws FileNotFoundException
@@ -59,8 +86,9 @@ public class StorageFileLoader
 			 */
 			commentBuffer = new ArrayList<>();
 			
-			lastParent = putEntryIntoTree(currentEntry);
+			putEntryIntoTree(currentEntry);
 			
+			lastParent = currentEntry.getParent();
 			lastChild = currentEntry;
 			lastDepth = currentDepth;
 		}
@@ -95,7 +123,7 @@ public class StorageFileLoader
 		}
 	}
 	
-	private Entry putEntryIntoTree(Entry currentEntry)
+	private void putEntryIntoTree(Entry currentEntry)
 	{
 		/*
 		 * If the current entry has the same depth as the last one (=> the 
@@ -106,8 +134,6 @@ public class StorageFileLoader
 			checkKey(lastParent, currentEntry.getLocalKey());
 
 			lastParent.addChild(currentEntry);
-			
-			return lastParent;
 		}
 		
 		/*
@@ -119,8 +145,6 @@ public class StorageFileLoader
 			checkKey(lastChild, currentEntry.getLocalKey());
 
 			lastChild.addChild(currentEntry);
-
-			return lastChild;
 		}
 		
 		/*
@@ -137,8 +161,6 @@ public class StorageFileLoader
 			checkKey(parent, currentEntry.getLocalKey());
 
 			parent.addChild(currentEntry);
-
-			return parent;
 		}
 		
 		/*
