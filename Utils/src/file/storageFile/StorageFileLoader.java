@@ -8,6 +8,17 @@ import java.util.regex.Matcher;
 
 import exception.StorageFileException;
 
+/**
+ * A class that implements the Functionality to load a StorageFile.<br>
+ * It is used by {@link StorageFile} and is not meant to be used by a user.<b>
+ * This class does nothing but creating the root entry for a storage file 
+ * (which is returned by <code>.load(...)</code>).
+ * 
+ * @author 	Lukas Reichmann
+ * @version 1.0
+ * @see 	StorageFile
+ *
+ */
 public class StorageFileLoader
 {
 	/**
@@ -50,12 +61,20 @@ public class StorageFileLoader
 	 */
 	private Entry lastParent;
 	
+	/**
+	 * Loads a StorageFile from a file.
+	 * 
+	 * @param file						The file to load from.
+	 * @return							The root entry of the loaded file.
+	 * @throws FileNotFoundException	If the internal scanner could not read
+	 * 									the file to load from.
+	 */
 	public Entry load(File file) throws FileNotFoundException
 	{
 		Entry ret = new Entry(null, "ROOT", "ROOT");
 		scanner = new Scanner(file);
 		
-		lastParent = ret;			//The parent of lastChild
+		lastParent = ret; //initialize lastParent with the root entry.
 		
 		while(scanner.hasNextLine())
 		{
@@ -63,9 +82,9 @@ public class StorageFileLoader
 			
 			currentLine = scanner.nextLine();
 			
+			//If the line is empty, it will be ignored.
 			if(currentLine.trim().isEmpty())
-				continue; 	//If the current line is empty, there is no need 
-							//to go on
+				continue; 	
 			
 			//Check if the line is a comment
 			if(currentLine.charAt(0) == StorageFile.COMMENT_PREFIX)
@@ -98,10 +117,17 @@ public class StorageFileLoader
 		return ret;
 	}
 	
+	/**
+	 * Creates the next entry that will be added to the tree-structure from the
+	 * line that is currently getting processed.
+	 * 
+	 * @return The next entry to add.
+	 */
 	private Entry makeEntry()
 	{
 		Matcher matcherValue = StorageFile.PATTERN_VALUE.matcher(currentLine);
-		Matcher matcherNoValue = StorageFile.PATTERN_NO_VALUE.matcher(currentLine);
+		Matcher matcherNoValue = 
+							StorageFile.PATTERN_NO_VALUE.matcher(currentLine);
 		
 		if(matcherValue.find()) //If this is a entry with a value
 		{
@@ -117,12 +143,18 @@ public class StorageFileLoader
 		else 	//If both matchers could not match the current line, then
 				//there is an invalid line -> error
 		{
-			scanner.close();
-			throw new StorageFileException
-								(String.format(StorageFile.MSG_INVALID_LINE, line));
+			exit(String.format(StorageFile.MSG_INVALID_LINE, line));
+			
+			//Dummy return, since .exit(...) always throws an exception
+			return null;
 		}
 	}
 	
+	/**
+	 * Puts the passed entry into the tree structure.
+	 * 
+	 * @param currentEntry The entry to add.
+	 */
 	private void putEntryIntoTree(Entry currentEntry)
 	{
 		/*
@@ -167,16 +199,33 @@ public class StorageFileLoader
 		 * If none of the cases above matched, currentDepth is invalid
 		 * (most likely currentDepth > (lastDepth + 1)).
 		 */
-		throw new StorageFileException(String.format(StorageFile.MSG_INVALID_DEPTH, line));
+		exit(String.format(StorageFile.MSG_INVALID_DEPTH, line));
 	}
 	
+	/**
+	 * Checks if the passed entry has a child with the passed local key.
+	 * 
+	 * @param entry	The children of this entry will be checked.
+	 * @param key	The local key to check for.
+	 */
 	private void checkKey(Entry entry, String key)
 	{
 		if(entry.hasChild(key))
 		{
-			scanner.close();
-			throw new StorageFileException
-					(String.format(StorageFile.MSG_KEY_ALREADY_EXISTING, key, line));
+			exit(String.format(StorageFile.MSG_KEY_ALREADY_EXISTING, 
+					key, line));
 		}
+	}
+	
+	/**
+	 * Closes the scanner and throws a {@link StorageFileException} 
+	 * with the passed message.
+	 * 
+	 * @param msg The message for the thrown exception.
+	 */
+	private void exit(String msg)
+	{
+		scanner.close();
+		throw new StorageFileException(msg);
 	}
 }
