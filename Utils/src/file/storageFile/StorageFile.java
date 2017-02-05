@@ -1,16 +1,11 @@
 package file.storageFile;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import exception.StorageFileException;
-import utils.Pointer;
 
 public class StorageFile
 {
