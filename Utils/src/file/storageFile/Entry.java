@@ -136,8 +136,8 @@ public class Entry
 			.append(StorageFile.KEY_VALUE_PERIMETER);
 			
 			if(getValue() != null)
-				sb.append(StorageFile.KEY_VALUE_PERIMETER)
-				.append(StorageFile.KEY_VALUE_SEPARATOR)
+				sb.append(StorageFile.KEY_VALUE_SEPARATOR)
+				.append(StorageFile.KEY_VALUE_PERIMETER)
 				.append(getValue()).append(StorageFile.KEY_VALUE_PERIMETER);
 			
 			sb.append('\n');
