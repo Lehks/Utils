@@ -95,7 +95,7 @@ public class StorageFile
 	/**
 	 * The regex pattern that stands for a dummy entry into a StorageFile.
 	 */
-	private static final Pattern PATTERN_VALUE = Pattern.compile("^" 
+	static final Pattern PATTERN_VALUE = Pattern.compile("^" 
 											+ SUBPATTERN_ANY_TAB
 											+ SUBPATTERN_KEY 
 											+ KEY_VALUE_SEPARATOR
@@ -105,7 +105,7 @@ public class StorageFile
 	/**
 	 * The regex pattern that stands for a normal entry into a StorageFile.
 	 */
-	private static final Pattern PATTERN_NO_VALUE = Pattern.compile("^" 
+	static final Pattern PATTERN_NO_VALUE = Pattern.compile("^" 
 											+ SUBPATTERN_ANY_TAB 
 											+ SUBPATTERN_KEY
 											+ "$");
@@ -139,7 +139,8 @@ public class StorageFile
 		if(!file.exists())
 			file.createNewFile();
 		
-		load();
+//		load();
+		rootEntry = new StorageFileLoader().load(file);
 	}
 	
 	/**
