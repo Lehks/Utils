@@ -106,6 +106,11 @@ public class StorageFile
 											+ "$");
 	
 	/**
+	 * The depth of the root entry.
+	 */
+	static final int ROOT_DEPTH = -1;
+	
+	/**
 	 * The parent of all entries that have the depth 0.
 	 */
 	private Entry rootEntry;
@@ -282,7 +287,7 @@ public class StorageFile
 	{
 		StringBuilder sb = new StringBuilder();
 		
-		rootEntry.asPrintable(sb, -1);
+		rootEntry.asPrintable(sb, ROOT_DEPTH);
 		
 		return sb.toString();
 	}
