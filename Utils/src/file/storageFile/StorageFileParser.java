@@ -56,12 +56,13 @@ public class StorageFileParser
 	/**
 	 * Constructs a new {@link StorageFileParser} that will parse the contents
 	 * of the passed {@link Reader}.<br>
-	 * This {@link Reader} will not be closed, but <code>.parse()</code> will read
-	 * until its end.<br>
+	 * This {@link Reader} will not be closed, but <code>.parse()</code> will 
+	 * read until its end.<br>
 	 * Furthermore, this passed {@link Reader} will be either wrapped into a 
-	 * {@link BufferedReader} or, in the case that the passed one was originally
-	 * already a {@link BufferedReader}, simple cast to one. This is the reason,
-	 * why <code>.getReader()</code> returns a {@link BufferedReader}.
+	 * {@link BufferedReader} or, in the case that the passed one was 
+	 * originally already a {@link BufferedReader}, simple cast to one. This 
+	 * is the reason, why <code>.getReader()</code> returns a 
+	 * {@link BufferedReader}.
 	 * 
 	 * @param reader The reader to take the code from.
 	 */
@@ -86,74 +87,112 @@ public class StorageFileParser
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
 
 			if (!currentLineStr.trim().startsWith("#"))
-				anyEntry();
+				expr_anyEntry();
 		}
 		
 		scanner.close();
 	}
 
 	/**
-	 * Does not throw anything, as long as the currentLine represents either
-	 * an entry with or without a value.
+	 * Allows any sort of entry.
 	 * 
-	 * @throws StorageFileParseException	If the statement could not be parsed.
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
 	 */
-	private void anyEntry() throws StorageFileParseException
+	private void expr_anyEntry() throws StorageFileParseException
 	{
 		try
 		{
-			valueEntry();
+			expr_valueEntry();
 			System.out.println("line v: \t\t" + line);
 		}
 		catch (NoSuchElementException e)
 		{
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
-			noValueEntry();
+			expr_noValueEntry();
 			System.out.println("line nv: \t\t" + line);
 		}
 	}
 
-	private void noValueEntry() throws StorageFileParseException
+	/**
+	 * Allows an entry without a value.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_noValueEntry() throws StorageFileParseException
 	{
-		entryStart();
-		anyWhiteSpace();
-		lineEnd();
+		expr_entryStart();
+		expr_anyWhiteSpace();
+		expr_lineEnd();
 	}
 
-	private void valueEntry() throws StorageFileParseException
+
+	/**
+	 * Allows an entry with a value.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_valueEntry() throws StorageFileParseException
 	{
-		entryStart();
-		anyWhiteSpace();
-		keyValueSeparator();
-		anyWhiteSpace();
-		value();
-		anyWhiteSpace();
-		lineEnd();
+		expr_entryStart();
+		expr_anyWhiteSpace();
+		expr_keyValueSeparator();
+		expr_anyWhiteSpace();
+		expr_value();
+		expr_anyWhiteSpace();
+		expr_lineEnd();
 	}
 
-	private void entryStart() throws StorageFileParseException
+	/**
+	 * Allows leading tabs and a key.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_entryStart() throws StorageFileParseException
 	{
-		leadingWhiteSpace();
-		key();
+		expr_leadingWhiteSpace();
+		expr_key();
 	}
 
-	private void leadingWhiteSpace()
+	/**
+	 * Pulls any leading tab and allows any amount (0 explicitly included).
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_leadingWhiteSpace()
 	{	
 		if(currentLine.peak() == '\t')
 		{
 			currentLine.pull();
-			leadingWhiteSpace();
+			expr_leadingWhiteSpace();
 		}
 	}
 
-	private void key() throws StorageFileParseException
+	/**
+	 * Allows any string that does not include a '.' and that is enclosed by
+	 * '"'.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_key() throws StorageFileParseException
 	{
-		keyValueEnclosure();
-		keyStr();
-		keyValueEnclosure();
+		expr_keyValueEnclosure();
+		expr_keyStr();
+		expr_keyValueEnclosure();
 	}
 
-	private void keyValueEnclosure() throws StorageFileParseException
+	/**
+	 * Allows only a single '"'.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_keyValueEnclosure() throws StorageFileParseException
 	{
 		if (currentLine.peak() != '"')
 		{
@@ -164,7 +203,13 @@ public class StorageFileParser
 		currentLine.pull();
 	}
 
-	private void keyStr() throws StorageFileParseException
+	/**
+	 * Allows any string that does not contain a '.'.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_keyStr() throws StorageFileParseException
 	{
 		if(currentLine.peak() != '"')
 		{
@@ -176,11 +221,17 @@ public class StorageFileParser
 			
 			currentLine.pull();
 			
-			keyStr();
+			expr_keyStr();
 		}
 	}
 
-	private void keyValueSeparator() throws StorageFileParseException
+	/**
+	 * Allows only a single '='.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_keyValueSeparator() throws StorageFileParseException
 	{
 		if (currentLine.peak() != '=')
 		{
@@ -191,24 +242,40 @@ public class StorageFileParser
 		currentLine.pull();
 	}
 
-	private void value() throws StorageFileParseException
+	/**
+	 * Allows any string that is enclosed by '"'.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_value() throws StorageFileParseException
 	{
-		keyValueEnclosure();
-		valueStr();
-		keyValueEnclosure();
+		expr_keyValueEnclosure();
+		expr_valueStr();
+		expr_keyValueEnclosure();
 	}
 
-	private void valueStr()
+	/**
+	 * Allows any string.
+	 */
+	private void expr_valueStr()
 	{
 		if(currentLine.peak() != '"')
 		{
 			currentLine.pull();
 			
-			valueStr();
+			expr_valueStr();
 		}
 	}
 
-	private void lineEnd() throws StorageFileParseException
+	/**
+	 * Does not check a specific character, but it checks if the line queue is
+	 * empty.
+	 * 
+	 * @throws StorageFileParseException	If the statement could not be 
+	 * 										parsed.
+	 */
+	private void expr_lineEnd() throws StorageFileParseException
 	{
 		if (!currentLine.isEmpty())
 		{
@@ -217,17 +284,27 @@ public class StorageFileParser
 		}
 	}
 	
-	private void anyWhiteSpace()
+	/**
+	 * Pulls any character that is either a space or a tab.
+	 */
+	private void expr_anyWhiteSpace()
 	{
 		if(!currentLine.isEmpty() &&
 				(currentLine.peak() == ' ' || currentLine.peak() == '\t'))
 		{
 			currentLine.pull();
 			
-			anyWhiteSpace();
+			expr_anyWhiteSpace();
 		}
 	}
 	
+	/**
+	 * Returns the column of the character that is currently being processed
+	 * within its line. This is used when {@link StorageFileParseException} are
+	 * getting thrown.
+	 * 
+	 * @return The column.
+	 */
 	private int getColumn()
 	{
 		return currentLineStr.length() - currentLine.getCurrentSize() + 1;
