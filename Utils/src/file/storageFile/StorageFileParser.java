@@ -39,7 +39,7 @@ public class StorageFileParser
 	 * The line that is currently processed. Used when an exception is thrown
 	 * to give further information.
 	 */
-	private int line 	= 0;
+	private int line = 0;
 
 	/**
 	 * Constructs a new {@link StorageFileParser} that will parse the contents 
@@ -133,15 +133,16 @@ public class StorageFileParser
 
 	private void entryStart() throws StorageFileParseException
 	{
-		leadingWhitespace();
+		leadingWhiteSpace();
 		key();
 	}
 
-	private void leadingWhitespace()
+	private void leadingWhiteSpace()
 	{	
-		while(currentLine.peak() == '\t')
+		if(currentLine.peak() == '\t')
 		{
 			currentLine.pull();
+			leadingWhiteSpace();
 		}
 	}
 
@@ -165,7 +166,7 @@ public class StorageFileParser
 
 	private void keyStr() throws StorageFileParseException
 	{
-		while(currentLine.peak() != '"')
+		if(currentLine.peak() != '"')
 		{
 			if (currentLine.peak() == '.')
 			{
@@ -174,6 +175,8 @@ public class StorageFileParser
 			}
 			
 			currentLine.pull();
+			
+			keyStr();
 		}
 	}
 
@@ -197,9 +200,11 @@ public class StorageFileParser
 
 	private void valueStr()
 	{
-		while(currentLine.peak() != '"')
+		if(currentLine.peak() != '"')
 		{
 			currentLine.pull();
+			
+			valueStr();
 		}
 	}
 
@@ -214,10 +219,12 @@ public class StorageFileParser
 	
 	private void anyWhiteSpace()
 	{
-		while(!currentLine.isEmpty() &&
+		if(!currentLine.isEmpty() &&
 				(currentLine.peak() == ' ' || currentLine.peak() == '\t'))
 		{
 			currentLine.pull();
+			
+			anyWhiteSpace();
 		}
 	}
 	
