@@ -1,6 +1,7 @@
 package file.storageFile;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -41,6 +42,8 @@ public class StorageFileParser
 	 */
 	private int line = 0;
 
+	private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+	
 	/**
 	 * Constructs a new {@link StorageFileParser} that will parse the contents 
 	 * of the passed {@link File}.
@@ -194,7 +197,7 @@ public class StorageFileParser
 	 */
 	private void expr_keyValueEnclosure() throws StorageFileParseException
 	{
-		if (currentLine.peak() != '"')
+		if (currentLine.peak() != StorageFileConstants.KEY_VALUE_PERIMETER)
 		{
 			throw new StorageFileInvalidKeyEnclosureException(line,
 					getColumn(), currentLine.peak());
@@ -211,9 +214,9 @@ public class StorageFileParser
 	 */
 	private void expr_keyStr() throws StorageFileParseException
 	{
-		if(currentLine.peak() != '"')
+		if(currentLine.peak() != StorageFileConstants.KEY_VALUE_PERIMETER)
 		{
-			if (currentLine.peak() == '.')
+			if (currentLine.peak() == StorageFileConstants.PATH_SEPARATOR)
 			{
 				throw new StorageFileInvalidKeyCharacterException(line,
 						getColumn(), currentLine.peak());
@@ -233,7 +236,7 @@ public class StorageFileParser
 	 */
 	private void expr_keyValueSeparator() throws StorageFileParseException
 	{
-		if (currentLine.peak() != '=')
+		if (currentLine.peak() != StorageFileConstants.KEY_VALUE_SEPARATOR)
 		{
 			throw new StorageFileInvalidSeparatorException(line, getColumn(),
 					currentLine.peak());
@@ -260,7 +263,7 @@ public class StorageFileParser
 	 */
 	private void expr_valueStr()
 	{
-		if(currentLine.peak() != '"')
+		if(currentLine.peak() != StorageFileConstants.KEY_VALUE_PERIMETER)
 		{
 			currentLine.pull();
 			

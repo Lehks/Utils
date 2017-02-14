@@ -127,18 +127,21 @@ public class Entry
 		if(depth >= 0)
 		{
 			for(String s: comments)
-				sb.append(StorageFile.COMMENT_PREFIX).append(s).append('\n');
+				sb.append(StorageFileConstants.COMMENT_PREFIX)
+				.append(s).append('\n');
 			
 			for(int i = 0; i < depth; i++)
 				sb.append("\t");
 			
-			sb.append(StorageFile.KEY_VALUE_PERIMETER).append(getLocalKey())
-			.append(StorageFile.KEY_VALUE_PERIMETER);
+			sb.append(StorageFileConstants.KEY_VALUE_PERIMETER)
+			.append(getLocalKey())
+			.append(StorageFileConstants.KEY_VALUE_PERIMETER);
 			
 			if(getValue() != null)
-				sb.append(StorageFile.KEY_VALUE_SEPARATOR)
-				.append(StorageFile.KEY_VALUE_PERIMETER)
-				.append(getValue()).append(StorageFile.KEY_VALUE_PERIMETER);
+				sb.append(StorageFileConstants.KEY_VALUE_SEPARATOR)
+				.append(StorageFileConstants.KEY_VALUE_PERIMETER)
+				.append(getValue())
+				.append(StorageFileConstants.KEY_VALUE_PERIMETER);
 			
 			sb.append('\n');
 		}

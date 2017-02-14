@@ -134,27 +134,6 @@ public class StorageFile
 															+ " is invalid.";
 	
 	/**
-	 * The character that marks a comment.
-	 */
-	public static final char COMMENT_PREFIX = '#';
-	
-	/**
-	 * The character that is used to separate local keys within a global key.
-	 */
-	public static final char PATH_SEPARATOR = '.';
-	
-	/**
-	 * The character that separates a key from a value ("KEY"="VALUE", = is 
-	 * said separator).
-	 */
-	public static final char KEY_VALUE_SEPARATOR = '=';
-	
-	/**
-	 * The character that encloses keys and values.
-	 */
-	public static final char KEY_VALUE_PERIMETER = '"';
-	
-	/**
 	 * The regex pattern that stands for any amount of tabs. 
 	 */
 	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
@@ -164,36 +143,40 @@ public class StorageFile
 	 * arbitrary length that does not contain the KEY_VALUE_SEPERATOR and that
 	 * starts and end with the KEY_VALUE_PERIMETER).
 	 */
-	private static final String SUBPATTERN_KEY = KEY_VALUE_PERIMETER 
-												+ "([^/.]*)" 
-												+ KEY_VALUE_PERIMETER;
+	private static final String SUBPATTERN_KEY = 
+									StorageFileConstants.KEY_VALUE_PERIMETER 
+									+ "([^/.]*)" 
+									+ StorageFileConstants.KEY_VALUE_PERIMETER;
 	
 	/**
 	 * The regex pattern that stands for a key (&rarr; a character string of 
 	 * arbitrary length and starts and end with the KEY_VALUE_PERIMETER).
 	 */
-	private static final String SUBPATTERN_VALUE = KEY_VALUE_PERIMETER 
-												+ "(.*)" 
-												+ KEY_VALUE_PERIMETER;
+	private static final String SUBPATTERN_VALUE = 
+									StorageFileConstants.KEY_VALUE_PERIMETER 
+									+ "(.*)" 
+									+ StorageFileConstants.KEY_VALUE_PERIMETER;
 	
 	/**
 	 * The regex pattern wrapper for the PATH_SEPERATOR (this is usually a ".",
 	 * which stands for any character in an regular expression and must
 	 * therefore be wrapped in [ ] ).
 	 */
-	private static final String PATH_SEPERATOR_REGEX = "[" 
-														+ PATH_SEPARATOR 
-														+ "]";
+	private static final String PATH_SEPERATOR_REGEX = 
+									"[" 
+									+ StorageFileConstants.PATH_SEPARATOR 
+									+ "]";
 	
 	/**
 	 * The regex pattern that stands for a dummy entry into a StorageFile.
 	 */
-	static final Pattern PATTERN_VALUE = Pattern.compile("^" 
-											+ SUBPATTERN_ANY_TAB
-											+ SUBPATTERN_KEY 
-											+ KEY_VALUE_SEPARATOR
-											+ SUBPATTERN_VALUE
-											+ "$");
+	static final Pattern PATTERN_VALUE = 
+									Pattern.compile("^" 
+									+ SUBPATTERN_ANY_TAB
+									+ SUBPATTERN_KEY 
+									+ StorageFileConstants.KEY_VALUE_SEPARATOR
+									+ SUBPATTERN_VALUE
+									+ "$");
 	
 	/**
 	 * The regex pattern that stands for a normal entry into a StorageFile.

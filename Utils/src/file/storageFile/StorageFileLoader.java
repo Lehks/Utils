@@ -87,7 +87,7 @@ public class StorageFileLoader
 				continue; 	
 			
 			//Check if the line is a comment
-			if(currentLine.charAt(0) == StorageFile.COMMENT_PREFIX)
+			if(currentLine.charAt(0) == StorageFileConstants.COMMENT_PREFIX)
 			{
 				commentBuffer.add(currentLine.substring(1));
 				continue; //If line is a comment, there is no need to go on
