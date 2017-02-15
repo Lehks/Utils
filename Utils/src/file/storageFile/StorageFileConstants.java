@@ -22,4 +22,8 @@ public class StorageFileConstants
 	 * The character that encloses keys and values.
 	 */
 	public static final char KEY_VALUE_PERIMETER = '"';
+	
+	public static final byte BINARY_TYPE_NO_VALUE 	= 0;
+	
+	public static final byte BINARY_TYPE_VALUE		= 0;
 }
