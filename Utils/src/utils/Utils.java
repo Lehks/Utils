@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import container.sorting.IComparable;
 import container.sorting.IComparable.EComparisonResult;
+import exception.SizeMismatchException;
 
 /**
  * A collection of public and static methods that provide general utility.
@@ -19,6 +20,16 @@ public class Utils
 	 * when calling .isEqual(double, double, double) as the third parameter.
 	 */
 	public static final double EPSILON = 1.0e-8;
+	
+	/**
+	 * The size of an int in bytes.
+	 */
+	public static final int INT_SIZE = 4;
+	
+	/**
+	 * The amount of bits that make up a byte.
+	 */
+	public static final int BYTE_SIZE = 8;
 	
 	/**
 	 * The {@link Scanner} which will be used by all the .read*() methods and. 
@@ -355,6 +366,61 @@ public class Utils
 	{
 		return comparable.compare(source, other) 
 				== IComparable.EComparisonResult.EQUAL;
+	}
+	
+	/**
+	 * Converts an int to a byte array with the size 4. To convert back to
+	 * an int, use <code>.toInt(byte[] bytes)</code>.
+	 * 
+	 * @param integer	The integer to convert.
+	 * @return			A byte array with the converted integer. This array
+	 * 					has always the size 4.
+	 */
+	public static final byte[] toByteArray(int integer)
+	{
+		byte[] ret = new byte[INT_SIZE];
+		
+		for(int i = 0; i < ret.length; i++)
+		{
+			ret[i] = (byte) (integer >> (BYTE_SIZE * i));
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Converts a byte array (with the size 4) to an int. To get such a byte
+	 * array, <code>.toByteArray(int integer)</code> may be used.
+	 * 
+	 * @param bytes						The byte array to convert. This array's
+	 * 									length must be equal to 4, or an
+	 * 									exception will be thrown.
+	 * @return							The converted integer.
+	 * 
+	 * @throws SizeMismatchException	If the size of the passed array is not
+	 * 									equals 4.
+	 */
+	public static final int toInt(byte[] bytes)
+	{
+		if(bytes.length != INT_SIZE)
+			throw new SizeMismatchException("TODO"); //TODO
+		
+		int ret = 0;
+
+		final int[] MASKS = 
+		{
+			0xFF,		//binary: 00000000000000000000000011111111
+			0xFF00,		//binary: 00000000000000001111111100000000
+			0xFF0000,	//binary: 00000000111111110000000000000000
+			0xFF000000	//binary: 00000000000000000000000011111111
+		};
+		
+		for(int i = 0; i < bytes.length; i++)
+		{
+			ret |= (((int) bytes[i]) << (BYTE_SIZE * i)) & MASKS[i];
+		}
+		
+		return ret;
 	}
 	
 	/**
