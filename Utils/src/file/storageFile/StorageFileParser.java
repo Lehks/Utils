@@ -1,5 +1,6 @@
 package file.storageFile;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -20,6 +22,14 @@ import exception.storageFile.StorageFileInvalidValueCharacterException;
 import exception.storageFile.StorageFileParseException;
 import utils.Utils;
 
+/**
+ * 
+ * 
+ * @author 	Lukas Reichmann
+ * @version	1.0
+ * @see		StorageFileLoader
+ * @see		StorageFile
+ */
 public class StorageFileParser
 {
 	/**
@@ -46,17 +56,14 @@ public class StorageFileParser
 	 */
 	private int line = 0;
 
+	/**
+	 * The stream that the byte data is written to.
+	 */
 	private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 	
-	private byte type = 0;
+	private EntryData entryData = new EntryData();
 	
-	private int depth = 0;
-	
-	private StringBuilder key = new StringBuilder();
-	
-	private StringBuilder value = new StringBuilder();
-	
-	private boolean done = false;
+	private State state = State.NOT_STARTED;
 	
 	/**
 	 * Constructs a new {@link StorageFileParser} that will parse the contents 
@@ -107,8 +114,15 @@ public class StorageFileParser
 	 */
 	public ByteArrayInputStream parse() throws StorageFileParseException
 	{
-		if(done)
+		if(!isDone())
 			return getOutput();
+			
+		/*
+		 * The program won't get here a second time after .parse() has been
+		 * called once; state will be updated to FINISHED, after the method
+		 * finished successfully.
+		 */
+		state = State.FAILED;
 		
 		Scanner scanner = new Scanner(reader);
 
@@ -119,12 +133,17 @@ public class StorageFileParser
 			currentLineStr = scanner.nextLine();
 			
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
-
-			if (!currentLineStr.trim().startsWith("#"))
+			
+			/*
+			 * Needs a ' "" + ' ahead of it, since COMMENT_PREFIX is a char 
+			 * and String.startsWith(...) only takes a String.
+			 */
+			if (!currentLineStr.trim().startsWith
+									("" + StorageFileConstants.COMMENT_PREFIX))
 				expr_anyEntry();
 		}
 		
-		done = true;
+		state = State.FINISHED;
 		
 		scanner.close();
 		
@@ -142,7 +161,7 @@ public class StorageFileParser
 		try
 		{
 			expr_valueEntry();
-			type = StorageFileConstants.BINARY_TYPE_VALUE;
+			entryData.setType(StorageFileConstants.BINARY_TYPE_VALUE);
 			System.out.println("line v: \t\t" + line);
 		}
 		catch (NoSuchElementException e)
@@ -150,7 +169,7 @@ public class StorageFileParser
 			reset();
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
 			expr_noValueEntry();
-			type = StorageFileConstants.BINARY_TYPE_NO_VALUE;
+			entryData.setType(StorageFileConstants.BINARY_TYPE_NO_VALUE);
 			System.out.println("line nv: \t\t" + line);
 		}
 		
@@ -211,7 +230,7 @@ public class StorageFileParser
 		while(currentLine.peak() == '\t')
 		{
 			currentLine.pull();
-			depth++;
+			entryData.setDepth(entryData.getDepth() + 1);
 		}
 	}
 
@@ -262,10 +281,10 @@ public class StorageFileParser
 						getColumn(), currentLine.peak());
 			}
 			
-			value.append(currentLine.pull());
+			entryData.getKey().append(currentLine.pull());
 		}
 		
-		if(value.length() == 0)
+		if(entryData.getKey().length() == 0)
 		{
 			throw new StorageFileEmptyKeyException(line, getColumn(),
 																currentLine.peak());
@@ -309,7 +328,7 @@ public class StorageFileParser
 	{
 		while(currentLine.peak() != StorageFileConstants.KEY_VALUE_PERIMETER)
 		{
-			value.append(currentLine.pull());
+			entryData.getValue().append(currentLine.pull());
 		}
 	}
 
@@ -373,7 +392,7 @@ public class StorageFileParser
 	 */
 	public ByteArrayInputStream getOutput()
 	{
-		if(!done)
+		if(!isDone())
 			return null;
 		
 		return new ByteArrayInputStream(outputStream.toByteArray());
@@ -389,7 +408,31 @@ public class StorageFileParser
 	 */
 	public boolean isDone()
 	{
-		return done;
+		return state == State.FINISHED;
+	}
+	
+	/**
+	 * If parsing was successful, the byte data will be written to the passed
+	 * {@link OutputStream}. If the parsing was not successful (<code>.isDone()
+	 * </code> would return true), nothing will happen.
+	 * 
+	 * @param ostream		The stream to write to.
+	 * @throws IOException	If an I/O error occurred when writing to the 
+	 * 						{@link OutputStream}.
+	 */
+	public void write(OutputStream ostream) throws IOException
+	{
+		if(!isDone())
+			return;
+		
+		BufferedOutputStream stream;
+		
+		if(ostream instanceof BufferedOutputStream)
+			stream = (BufferedOutputStream) ostream;
+		else
+			stream = new BufferedOutputStream(ostream);
+		
+		stream.write(outputStream.toByteArray());
 	}
 	
 	/**
@@ -398,40 +441,131 @@ public class StorageFileParser
 	 */
 	private void writeToBufferAndReset()
 	{
-		try
-		{
-			outputStream.write(type);
-			outputStream.write(Utils.toByteArray(depth));
-			outputStream.write(Utils.toByteArray(key.length()));
-			
-			outputStream.write(key.toString().getBytes());
-
-			if(type == StorageFileConstants.BINARY_TYPE_VALUE)
-			{
-				outputStream.write(Utils.toByteArray(value.length()));
-				outputStream.write(value.toString().getBytes());
-			}
-		}
-		catch (IOException e) 
-		{
-			/*
-			 * With a ByteArrayOutputStream, this exception should never happen.
-			 * (Still needs catching, since the exception is declared in
-			 * OutputStream)
-			 */
-		}
+		entryData.write(outputStream);
 		
 		reset();
 	}
 	
 	/**
-	 * Resets the attributes 'depth', 'key' and 'value' to their initial values
-	 * (Which allows them to be used to parse the next entry).
+	 * Constructs a new {@link EntryData} and makes 'entryData' reference this
+	 * new instance, which allows that new instance to be used to parse the
+	 * next entry.
 	 */
 	private void reset()
 	{
-		depth 	= 0;
-		key 	= new StringBuilder();
-		value 	= new StringBuilder();
+		entryData = new EntryData();
+	}
+	
+	/**
+	 * A class to hold information about an entry.
+	 * 
+	 * @author Lukas Reichmann
+	 */
+	private class EntryData
+	{
+		/**
+		 * The type of the entry. This is either BINARY_TYPE_NO_VALUE if the
+		 * entry does not hold a value, or BINARY_TYPE_VALUE if the entry
+		 * does hold a value.
+		 */
+		private int type				= 0;
+		
+		/**
+		 * The depth of the entry.
+		 */
+		private int depth				= 0;
+		
+		/**
+		 * The key of the entry.
+		 */
+		private StringBuilder key		= new StringBuilder();
+		
+		/**
+		 * The value of the entry.
+		 */
+		private StringBuilder value		= new StringBuilder();
+		
+		/**
+		 * Sets the type of the entry.
+		 * @param type 	The new type.
+		 */
+		public void setType(int type)
+		{
+			this.type = type;
+		}
+		
+		/**
+		 * Returns the depth of the entry.
+		 * @return 	The depth.
+		 */
+		public int getDepth()
+		{
+			return depth;
+		}
+
+		/**
+		 * Sets the type of the entry.
+		 * @param type 	The new type.
+		 */
+		public void setDepth(int depth)
+		{
+			this.depth = depth;
+		}
+		
+		/**
+		 * Returns the key of the entry.
+		 * @return 	The key.
+		 */
+		public StringBuilder getKey()
+		{
+			return key;
+		}
+		
+		/**
+		 * Returns the value of the entry.
+		 * @return 	The value.
+		 */
+		public StringBuilder getValue()
+		{
+			return value;
+		}
+		
+		/**
+		 * Writes the entry data into the passed {@link ByteArrayOutputStream}.
+		 * @param stream	The stream to write to.
+		 */
+		public void write(ByteArrayOutputStream stream)
+		{
+			try
+			{
+				stream.write(type);
+				stream.write(Utils.toByteArray(depth));
+				stream.write(Utils.toByteArray(key.length()));
+				
+				stream.write(key.toString().getBytes());
+
+				if(type == StorageFileConstants.BINARY_TYPE_VALUE)
+				{
+					outputStream.write(Utils.toByteArray(value.length()));
+					outputStream.write(value.toString().getBytes());
+				}
+			}
+			catch (IOException e) 
+			{
+				/*
+				 * With a ByteArrayOutputStream, this exception should never 
+				 * happen.
+				 * (Still needs catching, since the exception is declared in
+				 * OutputStream)
+				 */
+			}
+		}
+	}
+	
+	private enum State
+	{
+		NOT_STARTED,
+		FAILED,
+		FINISHED
 	}
 }
