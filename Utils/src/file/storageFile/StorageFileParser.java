@@ -23,7 +23,36 @@ import exception.storageFile.StorageFileParseException;
 import utils.Utils;
 
 /**
- * 
+ * A class that parses a {@link StorageFile}, which means that the parser 
+ * checks for syntax errors and, in the case that no such errors were found, 
+ * will output byte data, which then can be loaded by a
+ * {@link StorageFileLoader}. It is also possible to export this byte data 
+ * into e.g. a file (or to be more specific, into any {@link OutputStream}) 
+ * and then a {@link StorageFileLoader} can load a {@link StorageFile} 
+ * directly from said {@link OutputStream}.<br>
+ * The usage of the {@link StorageFileParser} is actually not all that hard, 
+ * to parse a File (or the contents of a Reader), use the respective 
+ * constructor. Afterwards, use <code>.parse()</code> to start the parsing.<br>
+ * If <code>.parse()</code> does finish without throwing any exceptions, 
+ * the parsing was successful and the returned {@link ByteArrayInputStream}
+ * holds the parsed byte data.<br>
+ * In the case of a syntax error, <code>.parse()</code> will throw a subclass
+ * of {@link StorageFileParseException} (depending on the error 
+ * that occurred).<br>
+ * <br>
+ * This is what the byte data looks like (byte data consists of single bytes
+ * after another, in the following representation, the single bytes are 
+ * separated by ","):<br>
+ * { type , depth , size of the key (in the following referred to as 
+ * "n<sub>k</sub>") , [ key byte 0 , key byte 1 , ... , key byte n<sub>k</sub> 
+ * ] , ( size of the value (in the following referred to as "n<sub>v</sub>" , 
+ * [ value byte 0 , value byte 1 , ... , value byte n<sub>v</sub> ] ) }<br>
+ * 'type' determines weather the entry has a value or not. There are two states
+ * for the type: BINARY_TYPE_NO_VALUE (0), BINARY_TYPE_VALUE (1). Depth is
+ * the amount of tabs that are in front of the entry. Everything inbetween the 
+ * curly braces is one single entry, all bytes inbetween the square brackets is
+ * a string with either n<sub>k</sub> or n<sub>v</sub> bytes. The part within 
+ * round braces is only present if the type is BINARY_TYPE_VALUE.
  * 
  * @author 	Lukas Reichmann
  * @version	1.0
@@ -61,8 +90,14 @@ public class StorageFileParser
 	 */
 	private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 	
+	/**
+	 * The data of the entry that is currently being parsed.
+	 */
 	private EntryData entryData = new EntryData();
 	
+	/**
+	 * The current state of the parser.
+	 */
 	private State state = State.NOT_STARTED;
 	
 	/**
@@ -540,14 +575,19 @@ public class StorageFileParser
 			{
 				stream.write(type);
 				stream.write(Utils.toByteArray(depth));
-				stream.write(Utils.toByteArray(key.length()));
 				
-				stream.write(key.toString().getBytes());
+				byte[] keyBytes = key.toString().getBytes();
+				
+				stream.write(Utils.toByteArray(keyBytes.length));
+				
+				stream.write(keyBytes);
 
 				if(type == StorageFileConstants.BINARY_TYPE_VALUE)
 				{
-					outputStream.write(Utils.toByteArray(value.length()));
-					outputStream.write(value.toString().getBytes());
+					byte[] valueBytes = value.toString().getBytes();
+					
+					outputStream.write(Utils.toByteArray(valueBytes.length));
+					outputStream.write(valueBytes);
 				}
 			}
 			catch (IOException e) 
