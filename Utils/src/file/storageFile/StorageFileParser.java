@@ -149,7 +149,7 @@ public class StorageFileParser
 	 */
 	public ByteArrayInputStream parse() throws StorageFileParseException
 	{
-		if(!isDone())
+		if(state != State.NOT_STARTED)
 			return getOutput();
 			
 		/*
@@ -449,7 +449,8 @@ public class StorageFileParser
 	/**
 	 * If parsing was successful, the byte data will be written to the passed
 	 * {@link OutputStream}. If the parsing was not successful (<code>.isDone()
-	 * </code> would return true), nothing will happen.
+	 * </code> would return true), nothing will happen.<br>
+	 * This method will call <code>{@link OutputStream}.close()</code>.
 	 * 
 	 * @param ostream		The stream to write to.
 	 * @throws IOException	If an I/O error occurred when writing to the 
@@ -468,6 +469,8 @@ public class StorageFileParser
 			stream = new BufferedOutputStream(ostream);
 		
 		stream.write(outputStream.toByteArray());
+		
+		stream.close();
 	}
 	
 	/**
