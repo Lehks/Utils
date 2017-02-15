@@ -506,7 +506,7 @@ public class StorageFileParser
 		 * entry does not hold a value, or BINARY_TYPE_VALUE if the entry
 		 * does hold a value.
 		 */
-		private int type				= 0;
+		private byte type				= 0;
 		
 		/**
 		 * The depth of the entry.
@@ -527,7 +527,7 @@ public class StorageFileParser
 		 * Sets the type of the entry.
 		 * @param type 	The new type.
 		 */
-		public void setType(int type)
+		public void setType(byte type)
 		{
 			this.type = type;
 		}
