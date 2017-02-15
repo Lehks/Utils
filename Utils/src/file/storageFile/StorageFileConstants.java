@@ -25,5 +25,5 @@ public class StorageFileConstants
 	
 	public static final byte BINARY_TYPE_NO_VALUE 	= 0;
 	
-	public static final byte BINARY_TYPE_VALUE		= 0;
+	public static final byte BINARY_TYPE_VALUE		= 1;
 }
