@@ -220,7 +220,7 @@ public class StorageFile
 		if(!file.exists())
 			file.createNewFile();
 		
-		rootEntry = new StorageFileLoader().load(file);
+//		rootEntry = new StorageFileLoader().load(file);
 	}
 	
 	/**
