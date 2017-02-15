@@ -197,7 +197,6 @@ public class StorageFileParser
 		{
 			expr_valueEntry();
 			entryData.setType(StorageFileConstants.BINARY_TYPE_VALUE);
-			System.out.println("line v: \t\t" + line);
 		}
 		catch (NoSuchElementException e)
 		{
@@ -205,7 +204,6 @@ public class StorageFileParser
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
 			expr_noValueEntry();
 			entryData.setType(StorageFileConstants.BINARY_TYPE_NO_VALUE);
-			System.out.println("line nv: \t\t" + line);
 		}
 		
 		writeToBufferAndReset();
@@ -223,7 +221,6 @@ public class StorageFileParser
 		expr_anyWhiteSpace();
 		expr_lineEnd();
 	}
-
 
 	/**
 	 * Allows an entry with a value.
@@ -582,6 +579,11 @@ public class StorageFileParser
 				byte[] keyBytes = key.toString().getBytes();
 				
 				stream.write(Utils.toByteArray(keyBytes.length));
+
+				for(byte b: Utils.toByteArray(keyBytes.length))
+				{
+					System.out.println(b);
+				}
 				
 				stream.write(keyBytes);
 
