@@ -10,16 +10,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import container.ArrayQueue;
-import exception.storageFile.StorageFileEmptyKeyException;
-import exception.storageFile.StorageFileInvalidKeyCharacterException;
-import exception.storageFile.StorageFileInvalidKeyEnclosureException;
-import exception.storageFile.StorageFileInvalidSeparatorException;
-import exception.storageFile.StorageFileInvalidValueCharacterException;
-import exception.storageFile.StorageFileParseException;
+import exception.storageFileParser.StorageFileEmptyKeyException;
+import exception.storageFileParser.StorageFileInvalidKeyCharacterException;
+import exception.storageFileParser.StorageFileInvalidKeyEnclosureException;
+import exception.storageFileParser.StorageFileInvalidSeparatorException;
+import exception.storageFileParser.StorageFileInvalidValueCharacterException;
+import exception.storageFileParser.StorageFileParseException;
+import utils.Messages;
 import utils.Utils;
 
 /**
@@ -31,7 +33,7 @@ import utils.Utils;
  * and then a {@link StorageFileLoader} can load a {@link StorageFile} 
  * directly from said {@link OutputStream}.<br>
  * The usage of the {@link StorageFileParser} is actually not all that hard, 
- * to parse a File (or the contents of a Reader), use the respective 
+ * to parse a File (or the content of a Reader), use the respective 
  * constructor. Afterwards, use <code>.parse()</code> to start the parsing.<br>
  * If <code>.parse()</code> does finish without throwing any exceptions, 
  * the parsing was successful and the returned {@link ByteArrayInputStream}
@@ -40,19 +42,36 @@ import utils.Utils;
  * of {@link StorageFileParseException} (depending on the error 
  * that occurred).<br>
  * <br>
- * This is what the byte data looks like (byte data consists of single bytes
- * after another, in the following representation, the single bytes are 
- * separated by ","):<br>
- * { type , depth , size of the key (in the following referred to as 
- * "n<sub>k</sub>") , [ key byte 0 , key byte 1 , ... , key byte n<sub>k</sub> 
- * ] , ( size of the value (in the following referred to as "n<sub>v</sub>" , 
- * [ value byte 0 , value byte 1 , ... , value byte n<sub>v</sub> ] ) }<br>
- * 'type' determines weather the entry has a value or not. There are two states
- * for the type: BINARY_TYPE_NO_VALUE (0), BINARY_TYPE_VALUE (1). Depth is
- * the amount of tabs that are in front of the entry. Everything inbetween the 
- * curly braces is one single entry, all bytes inbetween the square brackets is
- * a string with either n<sub>k</sub> or n<sub>v</sub> bytes. The part within 
- * round braces is only present if the type is BINARY_TYPE_VALUE.
+ * In the following the structure of the byte data is explained:<br>
+ * Before the entire structure can be explained, the single constructs that
+ * make up the byte data need to be clarified.<br>
+ * The byte data is made up of multiple parts and each part has its own data
+ * type and a name. This combination is given as follows: data type : name.
+ * Those parts are always separated by a semicolon.<br>
+ * These are the available data types (they map directly to the corresponding
+ * Java data types):<br>
+ * byte: A single byte. These can be written directly to the byte data.<br>
+ * int: A number made up of four bytes. They are being split up to bytes
+ * using <code>{@link Utils}.toByteArray(...)</code>.<br>
+ * string: A sequence of characters. When writing a string, the length
+ * of the string in bytes is written and then the content of the string (in 
+ * bytes) will be written.<br>
+ * <br>
+ * This is what a single entry looks like:<br>
+ * { byte : type ; int : depth ; string : key ; ( string : value ) ; 
+ * int: comment amount ; [ string : comment ]<sub>i</sub> }
+ * <br>
+ * Type: The type of the entry. This is either BYTE_TYPE_DUMMY, if the entry is
+ * a dummy entry, or BYTE_TYPE_NORMAL, if the entry is a normal entry.<br>
+ * Depth: The depth of the entry.<br>
+ * Key: The key of the entry.<br>
+ * Value: The value of the entry. This is only present, if the type is 
+ * BYTE_TYPE_NORMAL (therefore the round braces).<br>
+ * Comment amount: The amount of comments that come with the entry. This is always
+ * &ge; 0.<br>
+ * Comments: The comments that come with the key. These comments repeat i times,
+ * whereas i &#8712; N and 0 &lt; i &le; comment amount. If comment amount = 0, 
+ * this part will not be present.
  * 
  * @author 	Lukas Reichmann
  * @version	1.0
@@ -95,13 +114,15 @@ public class StorageFileParser
 	 */
 	private EntryData entryData = new EntryData();
 	
+	private LinkedList<String> commentBuffer = new LinkedList<>();
+	
 	/**
 	 * The current state of the parser.
 	 */
 	private State state = State.NOT_STARTED;
 	
 	/**
-	 * Constructs a new {@link StorageFileParser} that will parse the contents 
+	 * Constructs a new {@link StorageFileParser} that will parse the content
 	 * of the passed {@link File}.
 	 * 
 	 * @param file						The file to take the code from.
@@ -113,7 +134,7 @@ public class StorageFileParser
 	}
 	
 	/**
-	 * Constructs a new {@link StorageFileParser} that will parse the contents
+	 * Constructs a new {@link StorageFileParser} that will parse the content
 	 * of the passed {@link Reader}.<br>
 	 * This {@link Reader} will not be closed, but <code>.parse()</code> will 
 	 * read until its end.<br>
@@ -151,7 +172,7 @@ public class StorageFileParser
 	{
 		if(state != State.NOT_STARTED)
 			return getOutput();
-			
+
 		/*
 		 * The program won't get here a second time after .parse() has been
 		 * called once; state will be updated to FINISHED, after the method
@@ -169,13 +190,21 @@ public class StorageFileParser
 			
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
 			
-			/*
-			 * Needs a ' "" + ' ahead of it, since COMMENT_PREFIX is a char 
-			 * and String.startsWith(...) only takes a String.
-			 */
-			if (!currentLineStr.trim().startsWith
-									("" + StorageFileConstants.COMMENT_PREFIX))
-				expr_anyEntry();
+			if(!currentLineStr.trim().isEmpty())
+			{
+				/*
+				 * At this point, currentLineStr will always have length > 0
+				 */
+				if (currentLineStr.charAt(0) !=
+											StorageFileConstants.COMMENT_PREFIX)
+				{
+					expr_anyEntry();
+				}
+				else
+				{
+					commentBuffer.push(currentLineStr.substring(1));
+				}
+			}
 		}
 		
 		state = State.FINISHED;
@@ -196,14 +225,14 @@ public class StorageFileParser
 		try
 		{
 			expr_valueEntry();
-			entryData.setType(StorageFileConstants.BINARY_TYPE_VALUE);
+			entryData.setType(StorageFileConstants.BYTE_TYPE_NORMAL);
 		}
 		catch (NoSuchElementException e)
 		{
-			reset();
+			reset(false);
 			currentLine = ArrayQueue.makeCharacterArrayQueue(currentLineStr);
 			expr_noValueEntry();
-			entryData.setType(StorageFileConstants.BINARY_TYPE_NO_VALUE);
+			entryData.setType(StorageFileConstants.BYTE_TYPE_DUMMY);
 		}
 		
 		writeToBufferAndReset();
@@ -259,7 +288,8 @@ public class StorageFileParser
 	 */
 	private void expr_leadingWhiteSpace()
 	{	
-		while(currentLine.peak() == '\t')
+		//TAB is a string with the length of 0, peak() returns a char
+		while(currentLine.peak() == StorageFileConstants.TAB.charAt(0))
 		{
 			currentLine.pull();
 			entryData.setDepth(entryData.getDepth() + 1);
@@ -386,7 +416,8 @@ public class StorageFileParser
 	private void expr_anyWhiteSpace()
 	{
 		while(!currentLine.isEmpty() &&
-				(currentLine.peak() == ' ' || currentLine.peak() == '\t'))
+				(currentLine.peak() == ' ' || 
+				currentLine.peak() == StorageFileConstants.TAB.charAt(0)))
 		{
 			currentLine.pull();
 		}
@@ -456,7 +487,7 @@ public class StorageFileParser
 	public void write(OutputStream ostream) throws IOException
 	{
 		if(!isDone())
-			return;
+			throw new IllegalStateException(Messages.STREAM_CLOSED);
 		
 		BufferedOutputStream stream;
 		
@@ -478,7 +509,7 @@ public class StorageFileParser
 	{
 		entryData.write(outputStream);
 		
-		reset();
+		reset(true);
 	}
 	
 	/**
@@ -486,9 +517,12 @@ public class StorageFileParser
 	 * new instance, which allows that new instance to be used to parse the
 	 * next entry.
 	 */
-	private void reset()
+	private void reset(boolean resetCommentBuffer)
 	{
 		entryData = new EntryData();
+		
+		if(resetCommentBuffer)
+			commentBuffer.clear();
 	}
 	
 	/**
@@ -499,26 +533,26 @@ public class StorageFileParser
 	private class EntryData
 	{
 		/**
-		 * The type of the entry. This is either BINARY_TYPE_NO_VALUE if the
-		 * entry does not hold a value, or BINARY_TYPE_VALUE if the entry
+		 * The type of the entry. This is either BYTE_TYPE_DUMMY if the
+		 * entry does not hold a value, or BYTE_TYPE_NORMAL if the entry
 		 * does hold a value.
 		 */
-		private byte type				= 0;
+		private byte type							= 0;
 		
 		/**
 		 * The depth of the entry.
 		 */
-		private int depth				= 0;
+		private int depth							= 0;
 		
 		/**
 		 * The key of the entry.
 		 */
-		private StringBuilder key		= new StringBuilder();
+		private StringBuilder key					= new StringBuilder();
 		
 		/**
 		 * The value of the entry.
 		 */
-		private StringBuilder value		= new StringBuilder();
+		private StringBuilder value					= new StringBuilder();
 		
 		/**
 		 * Sets the type of the entry.
@@ -567,6 +601,7 @@ public class StorageFileParser
 		
 		/**
 		 * Writes the entry data into the passed {@link ByteArrayOutputStream}.
+		 * 
 		 * @param stream	The stream to write to.
 		 */
 		public void write(ByteArrayOutputStream stream)
@@ -574,26 +609,20 @@ public class StorageFileParser
 			try
 			{
 				stream.write(type);
-				stream.write(Utils.toByteArray(depth));
 				
-				byte[] keyBytes = key.toString().getBytes();
+				writeInt(stream, depth);
 				
-				stream.write(Utils.toByteArray(keyBytes.length));
+				writeString(stream, key.toString());
 
-				for(byte b: Utils.toByteArray(keyBytes.length))
+				if(type == StorageFileConstants.BYTE_TYPE_NORMAL)
 				{
-					System.out.println(b);
+					writeString(stream, value.toString());
 				}
 				
-				stream.write(keyBytes);
-
-				if(type == StorageFileConstants.BINARY_TYPE_VALUE)
-				{
-					byte[] valueBytes = value.toString().getBytes();
-					
-					outputStream.write(Utils.toByteArray(valueBytes.length));
-					outputStream.write(valueBytes);
-				}
+				writeInt(stream, commentBuffer.size());
+				
+				for(String s: commentBuffer)
+					writeString(stream, s);
 			}
 			catch (IOException e) 
 			{
@@ -607,10 +636,61 @@ public class StorageFileParser
 		}
 	}
 	
+	/**
+	 * Writes an int to the passed stream using <code>Utils.toByteArray()</code>.
+	 * 
+	 * @param stream		The stream to write into.
+	 * @param i				The int to write.
+	 * @throws IOException	If an I/O error occured.
+	 */
+	private void writeInt(ByteArrayOutputStream stream, int i) throws IOException
+	{
+		stream.write(Utils.toByteArray(i));
+	}
+	
+
+	/**
+	 * Writes a String to the passed stream using the following structure:<br>
+	 * First, the size of the String in bytes is is written as an int.<br>
+	 * Seccond, the String is converted to an byte array and this array is
+	 * then written to the stream.
+	 * 
+	 * @param stream		The stream to write into.
+	 * @param i				The int to write.
+	 * @throws IOException	If an I/O error occured.
+	 */
+	private void writeString(ByteArrayOutputStream stream, String s)
+																throws IOException
+	{
+		byte[] bytes = s.toString().getBytes();
+		
+		writeInt(stream, bytes.length);
+
+		stream.write(bytes);
+	}
+	
+	/**
+	 * An enumeration to store the state of the parser internally.
+	 * 
+	 * @author 	Lukas Reichmann
+	 * @version 1.0
+	 */
 	private enum State
 	{
+		/**
+		 * If the parser has not been started yet (<code>.parse()</code>
+		 * has not been called yet).
+		 */
 		NOT_STARTED,
+		
+		/**
+		 * If <code>.parse()</code> has thrown a {@link StorageFileParseException}.
+		 */
 		FAILED,
+		
+		/**
+		 * If <code>.parse()</code> has finished without any errors.
+		 */
 		FINISHED
 	}
 }

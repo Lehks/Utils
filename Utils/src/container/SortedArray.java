@@ -10,6 +10,7 @@ import container.sorting.ISortingAlgorithm;
 import container.sorting.InsertionSort;
 import container.sorting.Quicksort;
 import exception.SizeMismatchException;
+import utils.Messages;
 import utils.Utils;
 
 /**
@@ -42,31 +43,6 @@ public class SortedArray<T> implements Iterable<T>
 	 * {@link ArrayIndexOutOfBoundsException}.
 	 */
 	public static final int INVALID_INDEX = -1;
-	
-	/**
-	 * The message that is being given to a ArrayIndexOutOfBoundsException if
-	 * the array is full.
-	 */
-	protected static final String MSG_FULL = "Array is full.";
-	
-	/**
-	 * The message that is being given to a {@link SizeMismatchException} if
-	 * the size and amount of elements does not fit when using the constructors 
-	 * <code>SortedArray(IComparable&lt;T&gt; comparable, int size ,
-	 * SortingAlgorithm algorithm, T... elements)</code> and <code>
-	 * SortedArray(IComparable&lt;T&gt; comparable, int size ,
-	 * ISortingAlgorithm&lt;T&gt; algorithm, T... elements)</code>
-	 */
-	protected static final String MSG_SIZE_MISMATCH = "Passed size is: %d, "
-											+ "but amount of elements is: %d";
-	
-	/**
-	 * The message that is being given to a {@link SizeMismatchException} 
-	 * thrown by SortedArray(int, IComparable) when the maximum size is
-	 * &lt; 0.
-	 */
-	protected static final String MSG_SIZE_SMALLER_ZERO 
-													= "Size must not be < 0.";
 	
 	/**
 	 * The comparable that is being used to compare two values when sorting.
@@ -103,7 +79,7 @@ public class SortedArray<T> implements Iterable<T>
 	public SortedArray(int maxSize, IComparable<T> comparable)
 	{
 		if(maxSize < 0)
-			throw new SizeMismatchException(MSG_SIZE_SMALLER_ZERO);
+			throw new SizeMismatchException(Messages.MSG_SIZE_SMALLER_ZERO);
 		
 		this.comparable = comparable;
 		this.elements = new Object[maxSize];
@@ -227,8 +203,8 @@ public class SortedArray<T> implements Iterable<T>
 	protected Object[] checkSizeAndCopyArray(T[] elements, int size)
 	{
 		if(size < elements.length)
-			throw new SizeMismatchException(String.format(MSG_SIZE_MISMATCH, 
-													size, elements.length));
+			throw new SizeMismatchException(String.format
+							(Messages.MSG_SIZE_MISMATCH, size, elements.length));
 		
 		/*
 		 * Copying array to prevent the original one getting changed 
@@ -275,7 +251,7 @@ public class SortedArray<T> implements Iterable<T>
 	public void insert(T element)
 	{
 		if(currentSize == getMaxSize())
-			throw new ArrayIndexOutOfBoundsException(MSG_FULL);
+			throw new ArrayIndexOutOfBoundsException(Messages.MSG_FULL);
 		
 		int i; //Will be initialized in the for-loop
 		
@@ -290,7 +266,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Inserts the contents of a collection to the array.
+	 * Inserts the content of a collection to the array.
 	 * 
 	 * @param elements	The elements to add.
 	 */
@@ -405,19 +381,19 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * A helper to <code>.find(ISearchCondition<T, T1> condition,
+	 * A helper to <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  T1 customObj)</code> that is called when that method needs to search
 	 *  sequentially. Parameter are the same that were passed to said <code>
 	 *  .find(...)</code>.
 	 *  
-	 * @param condition	See <code>.find(ISearchCondition<T, T1> condition,
+	 * @param condition	See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  				T1 customObj)</code>
-	 * @param customObj	See <code>.find(ISearchCondition<T, T1> condition,
+	 * @param customObj	See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  				T1 customObj)</code>
-	 * @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
+	 * @param <T1>		See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  				T1 customObj)</code>.
 	 *  
-	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
+	 * @return			See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  				T1 customObj)</code>.
 	 */
 	protected <T1> int findSequentially(ISearchCondition<T, T1> condition, 
@@ -434,19 +410,19 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * A helper to <code>.find(ISearchCondition<T, T1> condition,
+	 * A helper to <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  T1 customObj)</code> that is called when that method needs to search
 	 *  binary. Parameter are the same that were passed to said <code>
 	 *  .find(...)</code>.
 	 *  
-	 * @param condition	See <code>.find(ISearchCondition<T, T1> condition,
-	 *  				T1 customObj)</code>
-	 * @param customObj	See <code>.find(ISearchCondition<T, T1> condition,
-	 *  				T1 customObj)</code>
-	 * @param <T1>		See <code>.find(ISearchCondition<T, T1> condition,
-	 *  				T1 customObj)</code>.
-	 *  
-	 * @return			See <code>.find(ISearchCondition<T, T1> condition,
+	 * @param condition	See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
+	 *  				T1 customObj)</code>                         
+	 * @param customObj	See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
+	 *  				T1 customObj)</code>                         
+	 * @param <T1>		See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
+	 *  				T1 customObj)</code>.                        
+	 *                                                               
+	 * @return			See <code>.find(ISearchCondition&lt;T, T1&gt; condition,
 	 *  				T1 customObj)</code>.
 	 */
 	protected <T1> int findBinary(ISearchCondition<T, T1> condition, 
@@ -658,7 +634,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Converts the contents of a {@link SortedArray} into a standard array.<br>
+	 * Converts the content of a {@link SortedArray} into a standard array.<br>
 	 * Note: All the elements from the {@link SortedArray} are being copied into 
 	 * a new array, which is then returned.
 	 * 
@@ -765,7 +741,7 @@ public class SortedArray<T> implements Iterable<T>
 	}
 	
 	/**
-	 * Returns the contents of this array as a Strings.<br>
+	 * Returns the content of this array as a Strings.<br>
 	 * This methods returns all elements in one line, separated by a ';'. To
 	 * get one element per line, call 
 	 * <code>.toString().replace("; ", "\n")</code>.

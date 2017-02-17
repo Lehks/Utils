@@ -3,6 +3,8 @@ package file.storageFile;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import exception.EntryDuplicateException;
+
 public class Entry
 {
 	/**
@@ -33,7 +35,7 @@ public class Entry
 	/**
 	 * Constructs a new Entry using the passed parameters (And setting 
 	 * 'parent' to null and initializing 'children' with <code>
-	 * new LinkedList<>()</code>).
+	 * new LinkedList&lt;&gt;()</code>).
 	 * 
 	 * @param comments	The comments that belong to the new entry.
 	 * @param localKey	The local key of the new entry.
@@ -62,9 +64,18 @@ public class Entry
 	 * Adds a child to the entry and sets the child's parent to this entry.
 	 * 
 	 * @param child	The new child.
+	 * 
+	 * @throws EntryDuplicateException If one of the children already has the
+	 * 									same local key as the passed one.
 	 */
-	public void addChild(Entry child)
+	public void addChild(Entry child) throws EntryDuplicateException
 	{
+		for(Entry c: children)
+		{
+			if(c.getLocalKey().equals(child.getLocalKey()))
+				throw new EntryDuplicateException("TODO"); //TODO Msg
+		}
+
 		child.parent = this;
 		children.add(child);
 	}
@@ -115,23 +126,23 @@ public class Entry
 		return false;
 	}
 
-		/**
-		 * Writes this entry and all of it's children to the passed 
-		 * {@link StringBuilder}.
-		 * 
-		 * @param sb	The {@link StringBuilder} to write to.
-		 * @param depth	The depth of the current entry.
-		 */
+	/**
+	 * Writes this entry and all of it's children to the passed 
+	 * {@link StringBuilder}.
+	 * 
+	 * @param sb	The {@link StringBuilder} to write to.
+	 * @param depth	The depth of the current entry.
+	 */
 	public void asPrintable(StringBuilder sb, int depth)
 	{
 		if(depth >= 0)
 		{
 			for(String s: comments)
 				sb.append(StorageFileConstants.COMMENT_PREFIX)
-				.append(s).append('\n');
+				.append(s).append(StorageFileConstants.NEW_LINE);
 			
 			for(int i = 0; i < depth; i++)
-				sb.append("\t");
+				sb.append(StorageFileConstants.TAB);
 			
 			sb.append(StorageFileConstants.KEY_VALUE_PERIMETER)
 			.append(getLocalKey())
@@ -143,7 +154,7 @@ public class Entry
 				.append(getValue())
 				.append(StorageFileConstants.KEY_VALUE_PERIMETER);
 			
-			sb.append('\n');
+			sb.append(StorageFileConstants.NEW_LINE);
 		}
 		
 		for(Entry e: children)

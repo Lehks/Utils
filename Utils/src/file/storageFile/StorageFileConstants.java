@@ -23,7 +23,23 @@ public class StorageFileConstants
 	 */
 	public static final char KEY_VALUE_PERIMETER = '"';
 	
-	public static final byte BINARY_TYPE_NO_VALUE 	= 0;
+	public static final String TAB = "\t";
 	
-	public static final byte BINARY_TYPE_VALUE		= 1;
+	public static final char NEW_LINE = '\n';
+	
+	/**
+	 * The value of a dummy entry in byte data.
+	 */
+	public static final byte BYTE_TYPE_DUMMY 	= 0;
+	
+	/**
+	 * The value of a normal entry in byte data.
+	 */
+	public static final byte BYTE_TYPE_NORMAL	= 1;
+	
+	/**
+	 * The depth of the root entry.
+	 */
+	public static final int ROOT_DEPTH = -1;
+	
 }

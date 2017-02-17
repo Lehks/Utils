@@ -24,12 +24,12 @@ public class Utils
 	/**
 	 * The size of an int in bytes.
 	 */
-	public static final int INT_SIZE = 4;
+	public static final int INT_SIZE_BYTE = 4;
 	
 	/**
 	 * The amount of bits that make up a byte.
 	 */
-	public static final int BYTE_SIZE = 8;
+	public static final int BYTE_SIZE_BIT = 8;
 	
 	/**
 	 * The {@link Scanner} which will be used by all the .read*() methods and. 
@@ -87,7 +87,7 @@ public class Utils
 		}
 		catch (NumberFormatException e)
 		{
-			System.out.println("Invalid Input. Please enter a new value.");
+			System.out.println(Messages.INVALID_INPUT_ENTER_NEW_VALUE);
 			return readInt(message);
 		}
 	}
@@ -115,7 +115,7 @@ public class Utils
 		}
 		catch (NumberFormatException e)
 		{
-			System.out.println("Invalid Input. Please enter a new value.");
+			System.out.println(Messages.INVALID_INPUT_ENTER_NEW_VALUE);
 			return readDouble(message);
 		}
 	}
@@ -143,7 +143,7 @@ public class Utils
 		}
 		catch (NumberFormatException e)
 		{
-			System.out.println("Invalid Input. Please enter a new value.");
+			System.out.println(Messages.INVALID_INPUT_ENTER_NEW_VALUE);
 			return readLong(message);
 		}
 	}
@@ -222,19 +222,20 @@ public class Utils
 	 */
 	public static boolean askYesNo(String msg)
 	{
-		String input = readString(msg + " Y/N: ");
+		String input = readString(msg + " " + Messages.ASK_YES_NO_YES + "/" 
+				+ Messages.ASK_YES_NO_NO + " ");
 		
-		if(input.equalsIgnoreCase("Y"))
+		if(input.equalsIgnoreCase(Messages.ASK_YES_NO_YES))
 		{
 			return true;
 		}
-		else if(input.equalsIgnoreCase("N"))
+		else if(input.equalsIgnoreCase(Messages.ASK_YES_NO_YES))
 		{
 			return false;
 		}
 		else
 		{
-			System.out.println("Invalid input.");
+			System.out.println(Messages.INVALID_INPUT);
 			return askYesNo(msg);
 		}
 	}
@@ -378,11 +379,11 @@ public class Utils
 	 */
 	public static final byte[] toByteArray(int integer)
 	{
-		byte[] ret = new byte[INT_SIZE];
+		byte[] ret = new byte[INT_SIZE_BYTE];
 		
 		for(int i = 0; i < ret.length; i++)
 		{
-			ret[i] = (byte) (integer >> (BYTE_SIZE * i));
+			ret[i] = (byte) (integer >> (BYTE_SIZE_BIT * i));
 		}
 		
 		return ret;
@@ -402,8 +403,8 @@ public class Utils
 	 */
 	public static final int toInt(byte[] bytes)
 	{
-		if(bytes.length != INT_SIZE)
-			throw new SizeMismatchException("TODO"); //TODO
+		if(bytes.length != INT_SIZE_BYTE)
+			throw new SizeMismatchException(Messages.SIZE_MUST_BE_4);
 		
 		int ret = 0;
 
@@ -417,7 +418,7 @@ public class Utils
 		
 		for(int i = 0; i < bytes.length; i++)
 		{
-			ret |= (((int) bytes[i]) << (BYTE_SIZE * i)) & MASKS[i];
+			ret |= (((int) bytes[i]) << (BYTE_SIZE_BIT * i)) & MASKS[i];
 		}
 		
 		return ret;

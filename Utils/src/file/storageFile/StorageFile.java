@@ -3,9 +3,12 @@ package file.storageFile;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.regex.Pattern;
+import java.io.InputStream;
 
-import exception.StorageFileException;
+import exception.EntryDuplicateException;
+import exception.IllegalDepthException;
+import exception.storageFileParser.StorageFileParseException;
+import utils.Messages;
 
 /**
  * A class to store and read data in a file using a special format.<br>
@@ -108,88 +111,12 @@ import exception.StorageFileException;
 public class StorageFile
 {
 	/**
-	 * The message that is being printed, if a key that should be added does
-	 * already exist.
-	 */
-	public static final String MSG_KEY_ALREADY_EXISTING = 
-								"The key \"%s\" in line %d already exists.";
-	
-	/**
-	 * The message that is being printed, if <code>.load()</code> reads a
-	 * faulty line.
-	 */
-	public static final String MSG_INVALID_LINE = "Line %d is invalid.";
-	
-	/**
-	 * The message that is being printed, if the file that is passed to 
-	 * a constructor is actually a directory.
-	 */
-	public static final String MSG_FILE_IS_DIRECTORY = "The passed file is a "
-														+ "directory.";
-	
-	/**
-	 * The message that is being printed, if an entry has an invalid depth.
-	 */
-	public static final String MSG_INVALID_DEPTH = "The depth of the line in %s"
-															+ " is invalid.";
-	
-	/**
-	 * The regex pattern that stands for any amount of tabs. 
-	 */
-	private static final String SUBPATTERN_ANY_TAB = "([\\t]*)";
-	
-	/**
-	 * The regex pattern that stands for a key (&rarr; a character string of 
-	 * arbitrary length that does not contain the KEY_VALUE_SEPERATOR and that
-	 * starts and end with the KEY_VALUE_PERIMETER).
-	 */
-	private static final String SUBPATTERN_KEY = 
-									StorageFileConstants.KEY_VALUE_PERIMETER 
-									+ "([^/.]*)" 
-									+ StorageFileConstants.KEY_VALUE_PERIMETER;
-	
-	/**
-	 * The regex pattern that stands for a key (&rarr; a character string of 
-	 * arbitrary length and starts and end with the KEY_VALUE_PERIMETER).
-	 */
-	private static final String SUBPATTERN_VALUE = 
-									StorageFileConstants.KEY_VALUE_PERIMETER 
-									+ "(.*)" 
-									+ StorageFileConstants.KEY_VALUE_PERIMETER;
-	
-	/**
 	 * The regex pattern wrapper for the PATH_SEPERATOR (this is usually a ".",
 	 * which stands for any character in an regular expression and must
 	 * therefore be wrapped in [ ] ).
 	 */
 	private static final String PATH_SEPERATOR_REGEX = 
-									"[" 
-									+ StorageFileConstants.PATH_SEPARATOR 
-									+ "]";
-	
-	/**
-	 * The regex pattern that stands for a dummy entry into a StorageFile.
-	 */
-	static final Pattern PATTERN_VALUE = 
-									Pattern.compile("^" 
-									+ SUBPATTERN_ANY_TAB
-									+ SUBPATTERN_KEY 
-									+ StorageFileConstants.KEY_VALUE_SEPARATOR
-									+ SUBPATTERN_VALUE
-									+ "$");
-	
-	/**
-	 * The regex pattern that stands for a normal entry into a StorageFile.
-	 */
-	static final Pattern PATTERN_NO_VALUE = Pattern.compile("^" 
-											+ SUBPATTERN_ANY_TAB 
-											+ SUBPATTERN_KEY
-											+ "$");
-	
-	/**
-	 * The depth of the root entry.
-	 */
-	static final int ROOT_DEPTH = -1;
+								"[" + StorageFileConstants.PATH_SEPARATOR + "]";
 	
 	/**
 	 * The parent of all entries that have the depth 0.
@@ -205,22 +132,34 @@ public class StorageFile
 	/**
 	 * Constructs a new {@link StorageFile}.
 	 * 
-	 * @param file			The file that the data will be read from. If it 
-	 * 						does not exist, it will be created.
-	 * @throws IOException 	If an I/O Error occurred.
+	 * @param file							The file that the data will be read 
+	 * 										from. 
+	 * 										If it  does not exist, it will be 
+	 * 										created.
+	 * @throws IOException 					If an I/O Error occurred.
+	 * @throws IllegalDepthException 		If an entry has an illegal depth.
+	 * @throws StorageFileParseException	If the parsing of the StorageFile
+	 * 										failed.
+	 * @throws EntryDuplicateException 		If two or more entries have the same
+	 * 										global key.
 	 */
-	public StorageFile(File file) throws IOException
+	public StorageFile(File file) throws IOException, IllegalDepthException, 
+									StorageFileParseException, 
+									EntryDuplicateException
 	{
 		this.file = file;
-		this.rootEntry = new Entry(null, "ROOT", "ROOT");
 		
 		if(file.isDirectory())
-			throw new StorageFileException(MSG_FILE_IS_DIRECTORY);
+			throw new IOException(Messages.MSG_FILE_IS_DIRECTORY);
 		
 		if(!file.exists())
 			file.createNewFile();
 		
-//		rootEntry = new StorageFileLoader().load(file);
+		StorageFileParser sfp = new StorageFileParser(file);
+		
+		sfp.parse();
+		
+		rootEntry = new StorageFileLoader(sfp.getOutput()).load();
 	}
 	
 	/**
@@ -228,12 +167,25 @@ public class StorageFile
 	 * <code>StorageFile(File file)</code> using a new File that holds
 	 * 'path' as path.
 	 * 
-	 * @param path			The path to the file.
-	 * @throws IOException 	If an I/O Error occurred.
+	 * @param path							The path to the file.
+	 * @throws IOException 					If an I/O Error occurred.
+	 * @throws IllegalDepthException 		If an entry has an illegal depth.
+	 * @throws StorageFileParseException	If the parsing of the StorageFile
+	 * 										failed.
+	 * @throws EntryDuplicateException 		If two or more entries have the same
+	 * 										global key.
 	 */
-	public StorageFile(String path) throws IOException
+	public StorageFile(String path) throws IOException, IllegalDepthException, 
+										StorageFileParseException,
+										EntryDuplicateException
 	{
 		this(new File(path));
+	}
+	
+	public StorageFile(InputStream istream) throws IOException, 
+									IllegalDepthException, EntryDuplicateException
+	{
+		rootEntry = new StorageFileLoader(istream).load();
 	}
 	
 	/**
@@ -367,7 +319,7 @@ public class StorageFile
 	{
 		StringBuilder sb = new StringBuilder();
 		
-		rootEntry.asPrintable(sb, ROOT_DEPTH);
+		rootEntry.asPrintable(sb, StorageFileConstants.ROOT_DEPTH);
 		
 		return sb.toString();
 	}
