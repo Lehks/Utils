@@ -1,5 +1,14 @@
 package file.storageFile;
 
+/**
+ * A class that contains constants that are needed and shared among the classes
+ * revolving the {@link StorageFile}.
+ * 
+ * @author 	Lukas Reichmann
+ * @version	1.0
+ * @see		StorageFile
+ *
+ */
 public class StorageFileConstants
 {
 	/**
@@ -23,8 +32,14 @@ public class StorageFileConstants
 	 */
 	public static final char KEY_VALUE_PERIMETER = '"';
 	
+	/**
+	 * Simply a String that contains only \t.
+	 */
 	public static final String TAB = "\t";
-	
+
+	/**
+	 * Simply a char that contains only \n.
+	 */
 	public static final char NEW_LINE = '\n';
 	
 	/**

@@ -16,14 +16,17 @@ import utils.Utils;
 /**
  * Loads a StorageFile from byte data (See {@link StorageFileParser} for 
  * documentation about byte data). This class relies on the byte data being
- * free from errors (very important, if it is attempted to load faulty byte data,
- * it is possible for the program to throw e.g. a {@link OutOfMemoryError}), 
- * since it does no error checks on things that were already checked by the 
- * {@link StorageFileParser}.<br>
+ * free from errors, since it does no error checks on things that were 
+ * already checked by the  {@link StorageFileParser} (very important, if it is 
+ * attempted to load faulty byte data, it is possible for the program to throw 
+ * e.g. a {@link OutOfMemoryError}).<br>
  * The only checking that the loader does is:<br>
  * Depth checks: The loader will not succeed if an entry has an invalid depth
  * (e.g. an entry has a depth of 2 but its parent has a depth of 0).<br>
- * Duplication checks: If two or more entries share the same global key.
+ * Duplication checks: If two or more entries share the same global key.<br>
+ * After all, the {@link StorageFileLoader} is not a class that is used by
+ * a user, since it returns a {@link Entry} which again is not usable on its
+ * own.
  * 
  * @author 	Lukas Reichmann
  * @version	1.0
@@ -49,8 +52,8 @@ public class StorageFileLoader
 	private Entry currentEntry;
 	
 	/**
-	 * The depth of 'previousEntry' (Stored here, since the entry does not store
-	 * it's depth).
+	 * The depth of 'previousEntry' (Stored here, since the entry does not 
+	 * store it's depth).
 	 */
 	private int previousDepth;
 
@@ -88,7 +91,8 @@ public class StorageFileLoader
 	 * Loads the {@link StorageFile} from the resource that was passed in the 
 	 * constructor.
 	 * 
-	 * @return							The root of the read {@link StorageFile}.
+	 * @return							The root of the read 
+	 * 									{@link StorageFile}.
 	 * @throws IOException				If an I/O error occurred.
 	 * @throws IllegalDepthException	If one of the entries has an illegal 
 	 * 									depth.
@@ -194,8 +198,8 @@ public class StorageFileLoader
 	
 	/**
 	 * Reads the next string in the input stream by first reading an int that
-	 * is the lenght of the string in bytes and then reading the bytes that make
-	 * up the string.
+	 * is the lenght of the string in bytes and then reading the bytes that 
+	 * make up the string.
 	 * 
 	 * @return				The read string.
 	 * @throws IOException	If an I/O error occurred.

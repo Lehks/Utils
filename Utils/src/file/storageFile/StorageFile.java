@@ -106,6 +106,7 @@ import utils.Messages;
  * 
  * @author 	Lukas Reichmann
  * @version	1.0
+ * @see		StorageFileParser
  *
  */
 public class StorageFile

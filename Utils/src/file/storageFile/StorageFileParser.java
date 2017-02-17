@@ -25,24 +25,28 @@ import utils.Messages;
 import utils.Utils;
 
 /**
- * A class that parses a {@link StorageFile}, which means that the parser 
- * checks for syntax errors and, in the case that no such errors were found, 
- * will output byte data, which then can be loaded by a
- * {@link StorageFileLoader}. It is also possible to export this byte data 
- * into e.g. a file (or to be more specific, into any {@link OutputStream}) 
- * and then a {@link StorageFileLoader} can load a {@link StorageFile} 
+ * A class that parses a {@link StorageFile}, aka. do syntax error checks
+ * and, in the case that no such errors were found, it will output byte data, 
+ * which then can be loaded by a {@link StorageFileLoader}.<br>
+ * It is also possible to export this byte data into e.g. a file (or to be more
+ * specific, into any {@link OutputStream}).<br>
+ * Afterwards, a {@link StorageFileLoader} can load a {@link StorageFile} 
  * directly from said {@link OutputStream}.<br>
  * The usage of the {@link StorageFileParser} is actually not all that hard, 
- * to parse a File (or the content of a Reader), use the respective 
- * constructor. Afterwards, use <code>.parse()</code> to start the parsing.<br>
+ * in order to parse a File (or the content of a Reader), the respective 
+ * constructor needs to be called. Afterwards, <code>.parse()</code> will start 
+ * the parsing.<br>
  * If <code>.parse()</code> does finish without throwing any exceptions, 
- * the parsing was successful and the returned {@link ByteArrayInputStream}
- * holds the parsed byte data.<br>
+ * the it was successful and the returned {@link ByteArrayInputStream}
+ * holds the parsed byte data (This stream can also be retrieved afterwards
+ * by calling <code>.getOutput()</code>).<br>
  * In the case of a syntax error, <code>.parse()</code> will throw a subclass
  * of {@link StorageFileParseException} (depending on the error 
  * that occurred).<br>
+ * Note that the parser only does per line error checks, so e.g. duplication
+ * of keys or invalid depths are done by the {@link StorageFileLoader}.
  * <br>
- * In the following the structure of the byte data is explained:<br>
+ * In the following, the structure of the byte data is explained:<br>
  * Before the entire structure can be explained, the single constructs that
  * make up the byte data need to be clarified.<br>
  * The byte data is made up of multiple parts and each part has its own data
@@ -59,19 +63,22 @@ import utils.Utils;
  * <br>
  * This is what a single entry looks like:<br>
  * { byte : type ; int : depth ; string : key ; ( string : value ) ; 
- * int: comment amount ; [ string : comment ]<sub>i</sub> }
+ * int: comment amount ; [ string : comment ]<sub>i</sub> }<br>
  * <br>
- * Type: The type of the entry. This is either BYTE_TYPE_DUMMY, if the entry is
- * a dummy entry, or BYTE_TYPE_NORMAL, if the entry is a normal entry.<br>
+ * Type: The type of the entry. This is either BYTE_TYPE_DUMMY 
+ * ({@value file.storageFile.StorageFileConstants#BYTE_TYPE_DUMMY}), if the 
+ * entry is a dummy entry, or BYTE_TYPE_NORMAL 
+ * ({@value file.storageFile.StorageFileConstants#BYTE_TYPE_NORMAL}), if the 
+ * entry is a normal entry.<br>
  * Depth: The depth of the entry.<br>
  * Key: The key of the entry.<br>
  * Value: The value of the entry. This is only present, if the type is 
  * BYTE_TYPE_NORMAL (therefore the round braces).<br>
- * Comment amount: The amount of comments that come with the entry. This is always
- * &ge; 0.<br>
- * Comments: The comments that come with the key. These comments repeat i times,
- * whereas i &#8712; N and 0 &lt; i &le; comment amount. If comment amount = 0, 
- * this part will not be present.
+ * Comment amount: The amount of comments that come with the entry. This is 
+ * always  &ge; 0.<br>
+ * Comments: The comments that come with the key. These comments repeat i 
+ * times, whereas i &#8712; N and 0 &lt; i &le; comment amount. If comment 
+ * amount = 0, this part will not be present.
  * 
  * @author 	Lukas Reichmann
  * @version	1.0
@@ -114,6 +121,11 @@ public class StorageFileParser
 	 */
 	private EntryData entryData = new EntryData();
 	
+	/**
+	 * Buffers the comments that will be passed to the next entry. This is
+	 * stored outside the entry data, since the entry data will be reset
+	 * even if the parsing has not failed yet.
+	 */
 	private LinkedList<String> commentBuffer = new LinkedList<>();
 	
 	/**
@@ -648,7 +660,6 @@ public class StorageFileParser
 		stream.write(Utils.toByteArray(i));
 	}
 	
-
 	/**
 	 * Writes a String to the passed stream using the following structure:<br>
 	 * First, the size of the String in bytes is is written as an int.<br>
