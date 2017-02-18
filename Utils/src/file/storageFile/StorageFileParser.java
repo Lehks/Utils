@@ -226,6 +226,12 @@ public class StorageFileParser
 		return new ByteArrayInputStream(outputStream.toByteArray());
 	}
 
+	/*
+	 * From here on follow all the methods that check for syntax errors
+	 * (the expr_* methods). All of these methods call each other to check
+	 * one or more characters per method.
+	 */
+	
 	/**
 	 * Allows any sort of entry.
 	 * 
