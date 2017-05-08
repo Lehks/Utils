@@ -1,5 +1,7 @@
 package utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import container.sorting.IComparable;
@@ -422,6 +424,29 @@ public class Utils
 		}
 		
 		return ret;
+	}
+	
+	/**
+	 * Converts the content of the passed file into a String.
+	 * 
+	 * @param file 	The file to read from.
+	 * @return		The content of the file.
+	 * @throws FileNotFoundException	If a error occurred while reading
+	 * 									from the file.
+	 */
+	public static final String fileToString(File file) throws FileNotFoundException
+	{
+		Scanner scanner = new Scanner(file);
+		StringBuilder builder = new StringBuilder();
+		
+		while(scanner.hasNextLine())
+		{
+			builder.append(scanner.nextLine()).append(System.getProperty("line.separator"));
+		}
+		
+		scanner.close();
+		
+		return builder.toString();
 	}
 	
 	/**
