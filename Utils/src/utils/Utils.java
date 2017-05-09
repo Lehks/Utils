@@ -449,6 +449,79 @@ public class Utils
 		return builder.toString();
 	}
 	
+	public static String createTable(String firstColumnTitle, String secondColumnTitle, String thirdColumnTitel,
+ 			String[] firstColumnContent, String[] secondColumnContent, String[] thirdColumnContent)
+ 	{
+ 		
+ 		int maxLength = firstColumnTitle.length();
+ 		
+ 		if(secondColumnTitle.length() > maxLength)
+ 			maxLength = secondColumnTitle.length();
+ 		if(thirdColumnTitel.length() > maxLength)
+ 			maxLength = thirdColumnTitel.length();
+ 		
+ 		for(String s: firstColumnContent)
+ 		{
+ 			if(s.length() > maxLength)
+ 				maxLength = s.length();
+ 		}
+ 			
+ 		for(String s: secondColumnContent)
+ 		{
+ 			if(s.length() > maxLength)
+ 				maxLength = s.length();
+ 		}
+ 		
+ 		for(String s: thirdColumnContent)
+ 		{
+ 			if(s.length() > maxLength)
+ 				maxLength = s.length();
+ 		}
+ 		
+ 		StringBuilder builder = new StringBuilder();
+ 		
+ 		builder.append(createTableHeading(firstColumnTitle, secondColumnTitle, thirdColumnTitel, maxLength));
+
+		builder.append("\n");
+ 		
+		int lenght = (firstColumnContent.length > secondColumnContent.length ? firstColumnContent.length : secondColumnContent.length);
+		
+		lenght = (lenght > thirdColumnContent.length ? lenght : thirdColumnContent.length);
+		
+ 		for(int i = 0; i < lenght; i++)
+ 		{
+ 			String firstContent = (i < firstColumnContent.length ? firstColumnContent[i] : "");
+ 			String secondContent = (i < secondColumnContent.length ? secondColumnContent[i] : "");
+ 			String thirdContent = (i < thirdColumnContent.length ? thirdColumnContent[i] : "");
+ 
+ 			builder.append(createTableContent(firstContent, secondContent, thirdContent, maxLength));
+ 		}
+ 		
+ 		return builder.toString();
+ 	}
+ 	
+ 	private static String createTableHeading(String firstColumn, String secondColumn, String thirdColumn, int maxLength)
+ 	{
+ 		StringBuilder sb = new StringBuilder();
+ 		sb.append(String.format("%-" + maxLength + "s | ", firstColumn));
+ 		sb.append(String.format("%-" + maxLength + "s | ", secondColumn)).append(thirdColumn).append("\n");
+ 		for(int i = 0; i < maxLength; i++)
+ 		{
+ 			sb.append("---");
+ 		}
+		sb.append("------");
+ 		
+ 		return sb.toString();
+ 	}
+ 	
+ 	private static String createTableContent(String firstColumn, String secondColumn, String thirdColumn, int maxLength)
+ 	{
+ 		StringBuilder sb = new StringBuilder();
+ 		sb.append(String.format("%-" + maxLength + "s | ", firstColumn));
+ 		sb.append(String.format("%-" + maxLength + "s | ", secondColumn)).append(thirdColumn).append("\n");
+ 		return sb.toString();
+ 	}
+	
 	/**
 	 * Small helper method to check if the scanner has yet to  be initialized. 
 	 * If yes, the scanner will be initialized; if not, nothing is going to 
